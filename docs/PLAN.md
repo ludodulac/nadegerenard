@@ -54,3 +54,12 @@ L'offre gratuite n'est pas illimitée : D1, R2 et Workers ont chacun leurs plafo
 ## Important
 
 Le code de connexion partagé auparavant dans le chat ne doit **pas** être réutilisé comme mot de passe de production. L'accès à l'administration doit être configuré avec un nouveau mot de passe fort stocké dans les secrets Cloudflare.
+
+## Initialisation D1 depuis la console Cloudflare (en cas de copie manuelle)
+
+Après avoir exécuté la migration SQL de création des tables, ouvrir l’onglet Console de `nadege-renard-db-eu` :
+
+1. Copier `seed.sql` depuis la branche `feat/site-v1-cms` (fichier contenant **une seule instruction INSERT** qui insère 8 pages). Exécuter. Vérifier `SELECT COUNT(*) AS total FROM pages;` → **8**.
+2. Copier ensuite `seed-footer.sql` (une seule instruction INSERT pour le pied de page). Exécuter. Vérifier `SELECT COUNT(*) AS total FROM settings;` → **1**.
+
+Ne pas réexécuter les instructions en boucle en cas de message `No SQL statements detected` : vérifier le compteur et le contenu du champ de saisie. Les deux requêtes sont idempotentes grâce à `INSERT OR IGNORE`.

@@ -2,6 +2,7 @@ const root=document.querySelector("#app"),brand=document.querySelector("#site-br
 const menu=document.querySelector("#site-menu"),menuButton=document.querySelector("#menu-button");
 let state={pages:[],footer:{},turnstileSiteKey:""};
 const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const alignClass=value=>value==="left"?"align-left":"align-center";
 const safeImage=s=>/^\/media\/[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(String(s||""));
 const safeLink=s=>{try{const u=new URL(s);return u.protocol==="https:"?u.href:"";}catch{return "";}}
 function marked(s){return esc(s).replace(/\*\*(.+?)\*\*/gs,"<strong>$1</strong>").replace(/__(.+?)__/gs,"<u>$1</u>").replace(/\n/g,"<br>");}
@@ -23,20 +24,20 @@ document.addEventListener("click",e=>{
 });
 window.addEventListener("popstate",()=>{closeMenu();render();});
 function picture(url,alt=""){
-  if(!safeImage(url))return '<div class="image-empty" aria-label="Photographie à venir">Photographie à venir</div>';
+  if(!safeImage(url))return "";
   return '<img loading="lazy" src="'+esc(url)+'" alt="'+esc(alt)+'">';
 }
 function blockHtml(b){
   switch(b.type){
-    case "heading":return '<h2 class="block-heading">'+esc(b.text)+'</h2>';
-    case "subtitle":return '<h2 class="block-subtitle">'+esc(b.text)+'</h2>';
-    case "label":return '<h2 class="block-label">'+esc(b.text)+'</h2>';
-    case "text":return '<div class="block-text '+(b.lineHeight==="large"?"line-large":b.lineHeight==="extra"?"line-extra":"")+'">'+marked(b.text)+'</div>';
-    case "image":return '<figure class="block-image">'+picture(b.src,b.alt)+(b.alt?'<figcaption class="image-alt">'+esc(b.alt)+'</figcaption>':"")+'</figure>';
+    case "heading":return b.text?.trim()?'<h2 class="block-heading '+alignClass(b.align)+'">'+esc(b.text)+'</h2>':"";
+    case "subtitle":return b.text?.trim()?'<h2 class="block-subtitle '+alignClass(b.align)+'">'+esc(b.text)+'</h2>':"";
+    case "label":return b.text?.trim()?'<h2 class="block-label '+alignClass(b.align)+'">'+esc(b.text)+'</h2>':"";
+    case "text":return b.text?.trim()?'<div class="block-text '+alignClass(b.align)+' '+(b.lineHeight==="large"?"line-large":b.lineHeight==="extra"?"line-extra":"")+'">'+marked(b.text)+'</div>':"";
+    case "image":return safeImage(b.src)?'<figure class="block-image">'+picture(b.src,b.alt)+'</figure>':"";
     case "press": {
       const link=safeLink(b.url);
       if(!link)return "";
-      return '<a class="press-card" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer"><div class="press-card-title">'+esc(b.title||"Article")+'</div><div class="press-image">'+picture(b.src,b.title)+'</div></a>';
+      return '<a class="press-card" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer"><div class="press-card-title '+alignClass(b.align)+'">'+esc(b.title||"Article")+'</div><div class="press-image">'+picture(b.src,b.title)+'</div></a>';
     }
     default:return "";
   }
@@ -52,10 +53,10 @@ function listGallery(p){
 function renderPage(p){
   const d=p.data||{},home=p.kind==="home";
   brand.classList.toggle("is-hidden",home);
-  const intro='<h1 class="page-title">'+esc(d.title)+'</h1>'+(d.subtitle?'<p class="page-subtitle">'+esc(d.subtitle)+'</p>':"");
+  const intro='<h1 class="page-title '+alignClass(d.titleAlign)+'">'+esc(d.title)+'</h1>'+(d.subtitle?'<p class="page-subtitle '+alignClass(d.subtitleAlign)+'">'+esc(d.subtitle)+'</p>':"");
   const back=p.kind==="detail"&&p.parent_id?state.pages.find(x=>x.id===p.parent_id):null;
   const blocks=Array.isArray(d.blocks)?d.blocks:[];
-  const other=blocks.filter(x=>x.type!=="press").map(blockHtml).map(s=>'<section class="content-block">'+s+'</section>').join("");
+  const other=blocks.filter(x=>x.type!=="press").map(blockHtml).filter(Boolean).map(s=>'<section class="content-block">'+s+'</section>').join("");
   const press=blocks.filter(x=>x.type==="press").map(blockHtml).join("");
   root.innerHTML='<article class="page '+(home?"page-home":"")+'">'+(back?'<a class="project-back" data-link href="'+pathFor(back)+'">← '+esc(back.data.title)+'</a>':"")+intro+other+
     (p.kind==="gallery"?listGallery(p):"")+(p.kind==="press"?'<div class="press-list">'+press+'</div>':"")+

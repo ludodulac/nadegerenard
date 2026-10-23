@@ -1,3 +1,4 @@
+import {legalDocument,privacyDocument,copyrightText} from "/legal.js";
 const root=document.querySelector("#app"),brand=document.querySelector("#site-brand");
 const menu=document.querySelector("#site-menu"),menuButton=document.querySelector("#menu-button");
 let state={pages:[],footer:{},turnstileSiteKey:""};
@@ -23,6 +24,10 @@ document.addEventListener("click",e=>{
   e.preventDefault();navigate(link.pathname);
 });
 window.addEventListener("popstate",()=>{closeMenu();render();});
+function photoCreditHtml(name,tag="p"){
+  const credit=copyrightText(name);
+  return credit?'<'+tag+' class="photo-credit">'+esc(credit)+'</'+tag+'>':"";
+}
 function picture(url,alt=""){
   if(!safeImage(url))return "";
   return '<img loading="lazy" src="'+esc(url)+'" alt="'+esc(alt)+'">';
@@ -37,14 +42,15 @@ function blockHtml(b){
       if(!safeImage(b.src))return "";
       const caption=b.caption??b.alt??"";
       return '<figure class="block-image">'+picture(b.src,b.alt||caption)+
-        (caption.trim()?'<figcaption class="image-caption">'+marked(caption)+'</figcaption>':"")+'</figure>';
+        (caption.trim()?'<figcaption class="image-caption">'+marked(caption)+'</figcaption>':"")+
+        photoCreditHtml(b.credit)+'</figure>';
     }
     case "press": {
       const link=safeLink(b.url);
       if(!link || (!b.title?.trim() && !safeImage(b.src)))return "";
       return '<a class="press-card" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">'+
         (b.title?.trim()?'<div class="press-card-title '+alignClass(b.align)+'">'+esc(b.title)+'</div>':"")+
-        (safeImage(b.src)?'<div class="press-image">'+picture(b.src,b.title)+'</div>':"")+'</a>';
+        (safeImage(b.src)?'<div class="press-image">'+picture(b.src,b.title)+photoCreditHtml(b.credit)+'</div>':"")+'</a>';
     }
     default:return "";
   }
@@ -54,7 +60,9 @@ function listGallery(p){
   if(!children.length)return "";
   return '<div class="gallery-list">'+children.map(x=>{
     const cover=x.data.cover||x.data.blocks.find(b=>b.type==="image"&&safeImage(b.src))?.src||"";
-    return '<a href="'+pathFor(x)+'" data-link class="gallery-card '+(cover?"":"no-image")+'">'+picture(cover,x.data.title)+'<span class="gallery-caption">'+esc(x.data.title)+'</span></a>';
+    return '<a href="'+pathFor(x)+'" data-link class="gallery-card '+(cover?"":"no-image")+'">'+picture(cover,x.data.title)+
+      '<span class="gallery-caption">'+esc(x.data.title)+'</span>'+
+      (safeImage(x.data.cover)&&copyrightText(x.data.coverCredit)?'<span class="gallery-credit">'+esc(copyrightText(x.data.coverCredit))+'</span>':"")+'</a>';
   }).join("")+'</div>';
 }
 function renderPage(p){
@@ -82,7 +90,7 @@ function contactForm(){
     '<div class="field"><label for="sender-email">Adresse e-mail</label><input id="sender-email" name="email" type="email" maxlength="254" required autocomplete="email"></div>'+
     '<div class="field"><label for="sender-subject">Sujet</label><input id="sender-subject" name="subject" maxlength="160"></div>'+
     '<div class="field"><label for="sender-message">Message</label><textarea id="sender-message" name="message" maxlength="5000" required></textarea></div>'+
-    '<p style="font-size:13px;color:#666;margin:0">Les informations transmises sont utilisées uniquement pour répondre à votre demande.</p>'+
+    '<p style="font-size:13px;color:#666;margin:0">Les informations transmises servent à répondre à votre demande. <button type="button" class="inline-privacy" data-open-privacy>Confidentialité et données personnelles</button>.</p>'+
     '<div id="turnstile-box"></div><button type="submit" class="submit" '+(!state.turnstileSiteKey?"disabled":"")+' >Envoyer</button>'+
     '<div class="form-message" id="contact-result" role="status" aria-live="polite">'+(!state.turnstileSiteKey?"Formulaire en cours de configuration.":"")+'</div>'+
     '</form>';
@@ -128,12 +136,18 @@ function updateFooter(){
   if(safeLink(f.instagram))social.push('<a href="'+esc(f.instagram)+'" target="_blank" rel="noopener noreferrer">'+icons.instagram+'<span>Instagram</span></a>');
   document.querySelector("#social-links").innerHTML=social.join("");
   document.querySelector("#copyright").textContent=f.copyright||"© Nadège Renard";
-  document.querySelector("#legal-text").textContent=f.legal||"Mentions légales à compléter.";
+  document.querySelector("#legal-text").textContent=legalDocument(f);
+  document.querySelector("#privacy-text").textContent=privacyDocument(f);
 }
 const dialog=document.querySelector("#legal-dialog");
 document.querySelector("#legal-button").addEventListener("click",()=>dialog.showModal());
 document.querySelector("#legal-close").addEventListener("click",()=>dialog.close());
 dialog.addEventListener("click",e=>{if(e.target===dialog)dialog.close();});
+const privacyDialog=document.querySelector("#privacy-dialog");
+document.querySelector("#privacy-button").addEventListener("click",()=>privacyDialog.showModal());
+document.querySelector("#privacy-close").addEventListener("click",()=>privacyDialog.close());
+privacyDialog.addEventListener("click",e=>{if(e.target===privacyDialog)privacyDialog.close();});
+document.addEventListener("click",e=>{if(e.target.closest("[data-open-privacy]"))privacyDialog.showModal();});
 function render(){
   const route=decodeURIComponent(window.location.pathname.replace(/\/$/,""))||"/";
   let p=route==="/"?state.pages.find(x=>x.kind==="home"):route.startsWith("/realisation/")?

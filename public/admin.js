@@ -35,7 +35,6 @@ function select(id){
   if(dirty && selected!==id && !confirm("Des modifications n’ont pas été enregistrées. Voulez-vous vraiment changer de page ?"))return;
   selected=id;dirty=false;
   const p=page(id);
-  if(dirty && selected!==id && !confirm("Un brouillon contient des modifications non enregistrées. Changer de page sans les enregistrer ?")) return;
   if(id==="footer"){draft=structuredClone(db.footer?.draft||{instagram:"",linkedin:"",legal:"",copyright:""});showFooter();}
   else if(id==="trash"){draft=null;showTrash();}
   else if(p){draft=structuredClone(p.draft);showPage();}

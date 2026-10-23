@@ -1,3 +1,4 @@
+import {LEGAL_FIELDS,legalDocument,privacyDocument,copyrightText} from "/legal.js";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const imageOK=s=>/^\/media\/[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(String(s||""));
@@ -37,7 +38,7 @@ function select(id){
   if(dirty && selected!==id && !confirm("Des modifications n’ont pas été enregistrées. Voulez-vous vraiment changer de page ?"))return;
   selected=id;dirty=false;
   const p=page(id);
-  if(id==="footer"){draft=structuredClone(db.footer?.draft||{instagram:"",linkedin:"",legal:"",copyright:""});showFooter();}
+  if(id==="footer"){draft=structuredClone(db.footer?.draft||{instagram:"",linkedin:"",legal:"",copyright:""});draft.legalDetails??={};showFooter();}
   else if(id==="trash"){draft=null;showTrash();}
   else if(p){draft=structuredClone(p.draft);if(p.kind==="home"){for(const block of draft.blocks||[]){if(block.type==="image"&&block.alt==="Photo d\u0027accueil")block.alt="";}}showPage();}
   else{selected="home";draft=structuredClone(page("home")?.draft||{});showPage();}
@@ -73,6 +74,11 @@ function choosePhoto(path,current,label="Photographie"){
     (exists?'<button type="button" class="mini" data-clear="'+esc(path)+'">Retirer la photo</button>':"")+'</div>'+
     (exists?'<img class="upload-preview" src="'+esc(current)+'" alt="Image sélectionnée">':"")+'</div>';
 }
+function photoAuthorField(i,author=""){
+  return '<div class="admin-field"><label for="photo-author-'+i+'">Auteur de la photographie (facultatif)</label>'+
+    '<input id="photo-author-'+i+'" type="text" maxlength="200" data-block="'+i+'" data-bkey="credit" value="'+esc(author)+'" placeholder="Ex. Sébastien Durand">'+
+    '<span class="field-tip">Le symbole © s’ajoute automatiquement. Si ce champ est vide, aucun crédit ne s’affiche.</span></div>';
+}
 function renderBlock(b,i){
   const textField=(label,key="text",rows=4)=>{
     const id="block-"+i+"-"+key;
@@ -88,9 +94,9 @@ function renderBlock(b,i){
       '<span class="field-tip">Sélectionnez des mots, puis cliquez sur une mise en forme.</span></div>'+
       textField("Paragraphe")+"<div class='admin-field'><label>Espacement entre les lignes</label><select data-block='"+i+"' data-bkey='lineHeight'>"+
       ["normal","large","extra"].map(v=>'<option value="'+v+'" '+((b.lineHeight||"normal")===v?"selected":"")+">"+({normal:"Normal",large:"Aéré",extra:"Très aéré"}[v])+"</option>").join("")+"</select></div>";
-  }else if(b.type==="image"){inner=choosePhoto("block:"+i,b.src)+textField("Texte affiché sous la photographie (facultatif)","caption",3);}
+  }else if(b.type==="image"){inner=choosePhoto("block:"+i,b.src)+textField("Texte affiché sous la photographie (facultatif)","caption",3)+photoAuthorField(i,b.credit);}
   else if(b.type==="press"){
-    inner=textField("Titre au-dessus de la photographie","title",2)+choosePhoto("block:"+i,b.src)+textField("Adresse https:// de l’article","url",2);
+    inner=textField("Titre au-dessus de la photographie","title",2)+choosePhoto("block:"+i,b.src)+photoAuthorField(i,b.credit)+textField("Adresse https:// de l’article","url",2);
   }else inner=textField(blockNames[b.type]);
   return '<div class="block-editor" data-block-wrapper="'+i+'"><div class="block-bar"><h3>'+blockNames[b.type]+' '+(i+1)+'</h3>'+
     '<div class="move-actions"><button class="mini" data-up="'+i+'" aria-label="Monter">↑</button>'+
@@ -104,7 +110,8 @@ function galleryProjects(){
     children.map(p=>'<article class="project-editor-card" id="project-'+esc(p.id)+'">'+
       '<div class="gallery-card project-card-preview '+(imageOK(p.draft.cover)?"":"no-image")+'">'+
         (imageOK(p.draft.cover)?'<img src="'+esc(p.draft.cover)+'" alt="">':'<span class="project-photo-placeholder">Photographie à ajouter</span>')+
-        '<span class="gallery-caption" data-project-caption="'+esc(p.id)+'">'+esc(p.draft.title)+'</span></div>'+
+        '<span class="gallery-caption" data-project-caption="'+esc(p.id)+'">'+esc(p.draft.title)+'</span>'+
+         '<span class="gallery-credit" data-project-credit-preview="'+esc(p.id)+'"'+(copyrightText(p.draft.coverCredit)?'':' hidden')+'>'+esc(copyrightText(p.draft.coverCredit))+'</span></div>'+
       '<div class="admin-field"><label for="project-name-'+esc(p.id)+'">Nom affiché en blanc sur la photo</label>'+
         '<input id="project-name-'+esc(p.id)+'" data-project-title="'+esc(p.id)+'" maxlength="180" value="'+esc(p.draft.title)+'"></div>'+
       '<div class="admin-field"><label>Photographie de cette réalisation</label>'+
@@ -112,6 +119,9 @@ function galleryProjects(){
           (imageOK(p.draft.cover)?"Remplacer la photographie":"Ajouter une photographie")+'</button>'+
           '<span class="photo-upload-status" role="status">'+(imageOK(p.draft.cover)?"✓ Photographie déjà enregistrée":"Aucune photographie enregistrée")+'</span></div>'+
         '<input id="project-photo-'+esc(p.id)+'" type="file" class="visually-hidden-file" accept="image/jpeg,image/png,image/webp,image/avif" aria-label="Choisir une photographie" data-project-upload="'+esc(p.id)+'"></div>'+
+       '<div class="admin-field"><label for="project-credit-'+esc(p.id)+'">Auteur de cette photographie (facultatif)</label>'+
+         '<input id="project-credit-'+esc(p.id)+'" maxlength="200" data-project-credit="'+esc(p.id)+'" value="'+esc(p.draft.coverCredit||"")+'" placeholder="Ex. Sébastien Durand">'+
+         '<span class="field-tip">Si renseigné : © suivi du nom, sinon aucun crédit.</span></div>'+
       '<div class="project-controls"><button type="button" class="outline-button" data-project-save="'+esc(p.id)+'">Enregistrer la photo et le titre</button>'+
         '<button type="button" class="black-button" data-project-edit="'+esc(p.id)+'">Modifier la page de cette réalisation →</button></div>'+
       '<p class="field-tip" data-project-status="'+esc(p.id)+'">'+(p.published?"Visible sur le site après sa dernière publication.":"Brouillon non publié.")+'</p></article>').join("")+
@@ -154,6 +164,9 @@ function bindContentFields(){
   $("#editing-panel").querySelectorAll("[data-block]").forEach(el=>el.addEventListener("input",()=>{
     draft.blocks[Number(el.dataset.block)][el.dataset.bkey]=el.value;markDirty();
   }));
+  $("#editing-panel").querySelectorAll("[data-legal-key]").forEach(el=>el.addEventListener("input",()=>{
+    draft.legalDetails??={};draft.legalDetails[el.dataset.legalKey]=el.value;markDirty();
+  }));
   $("#editing-panel").querySelectorAll("[data-align-value]").forEach(el=>el.addEventListener("click",()=>{
     const value=el.dataset.alignValue;
     if(el.dataset.alignBlock!==undefined)draft.blocks[Number(el.dataset.alignBlock)].align=value;
@@ -186,11 +199,12 @@ async function uploadPhoto(file){
   return result.url;
 }
 async function saveProject(id){
-  const p=page(id),field=document.querySelector('[data-project-title="'+id+'"]');
+  const p=page(id),field=document.querySelector('[data-project-title="'+id+'"]'),creditField=document.querySelector('[data-project-credit="'+id+'"]');
   if(!p||!field)throw Error("Réalisation introuvable");
   const title=field.value.trim();
   if(!title)throw Error("Donnez un nom à cette photographie.");
   p.draft.title=title;
+  if(creditField)p.draft.coverCredit=creditField.value;
   await api("save",{id,content:p.draft});
   drawSidebar();
   const status=document.querySelector('[data-project-status="'+id+'"]');
@@ -198,6 +212,12 @@ async function saveProject(id){
   return p;
 }
 function bindProjectCards(){
+  document.querySelectorAll("[data-project-credit]").forEach(el=>el.addEventListener("input",()=>{
+    const p=page(el.dataset.projectCredit);if(!p)return;
+    p.draft.coverCredit=el.value;
+    const preview=document.querySelector('[data-project-credit-preview="'+el.dataset.projectCredit+'"]');
+    if(preview){preview.textContent=copyrightText(el.value);preview.hidden=!copyrightText(el.value);}
+  }));
   document.querySelectorAll("[data-project-title]").forEach(el=>el.addEventListener("input",()=>{
     const caption=document.querySelector('[data-project-caption="'+el.dataset.projectTitle+'"]');
     if(caption)caption.textContent=el.value||"Nouvelle réalisation";
@@ -239,7 +259,7 @@ function bindProjectCards(){
 }
 function bindButtons(){
   $("#editing-panel").querySelectorAll("[data-add]").forEach(btn=>btn.addEventListener("click",()=>{
-    const type=btn.dataset.add;draft.blocks.push({type,text:"",title:"",src:"",url:"",alt:"",caption:"",lineHeight:"normal",align:"left"});markDirty();showPage();
+    const type=btn.dataset.add;draft.blocks.push({type,text:"",title:"",src:"",url:"",alt:"",caption:"",credit:"",lineHeight:"normal",align:"left"});markDirty();showPage();
   }));
   $("#editing-panel").querySelectorAll("[data-remove]").forEach(btn=>btn.addEventListener("click",()=>{draft.blocks.splice(Number(btn.dataset.remove),1);markDirty();showPage();}));
   $("#editing-panel").querySelectorAll("[data-up]").forEach(btn=>btn.addEventListener("click",()=>move(Number(btn.dataset.up),-1)));

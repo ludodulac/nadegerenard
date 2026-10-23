@@ -108,3 +108,60 @@
 .trash-item strong{font-size:15px;font-weight:500}
 .trash-kind{font-size:11px;color:#777;letter-spacing:.04em}
 @media(max-width:600px){.project-controls .project-trash-button{width:100%}}
+
+/* Enregistrement flottant, disponible pendant toute l'édition, sans publier. */
+#floating-save[hidden]{display:none}
+.floating-save{
+  position:fixed;
+  z-index:75;
+  right:clamp(18px,3vw,52px);
+  bottom:calc(22px + env(safe-area-inset-bottom, 0px));
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:7px;
+  width:185px;
+  padding:11px;
+  border:1px solid #d7d7d7;
+  border-radius:12px;
+  background:rgba(255,255,255,.97);
+  box-shadow:0 6px 25px rgba(0,0,0,.15);
+}
+.floating-save-status{
+  text-align:center;
+  font-size:12px;
+  line-height:1.3;
+  color:#565656;
+}
+.floating-save[data-state="dirty"] .floating-save-status{color:#985500;font-weight:600}
+.floating-save[data-state="saved"] .floating-save-status{color:#216a37;font-weight:600}
+.floating-save[data-state="error"] .floating-save-status{color:#a12c2c;font-weight:600}
+.floating-save-button{
+  appearance:none;
+  border:1px solid #1e1e1e;
+  border-radius:7px;
+  background:#1e1e1e;
+  color:white;
+  font-size:15px;
+  font-weight:600;
+  padding:12px 14px;
+  min-height:44px;
+  cursor:pointer;
+}
+.floating-save-button:hover:not(:disabled){background:#424242}
+.floating-save-button:focus-visible{outline:3px solid #777;outline-offset:3px}
+.floating-save-button:disabled{opacity:.65;cursor:wait}
+/* Le dernier champ et l'aperçu restent accessibles malgré le bouton fixe. */
+.editor-body{padding-bottom:135px}
+@media(max-width:600px){
+  .floating-save{
+    right:12px;
+    bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+    width:160px;
+    padding:8px;
+    gap:5px;
+  }
+  .floating-save-button{font-size:14px;padding:10px 9px;min-height:44px}
+  .floating-save-status{font-size:11px}
+  .editor-body{padding-bottom:130px}
+}

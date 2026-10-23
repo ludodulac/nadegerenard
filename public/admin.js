@@ -38,7 +38,7 @@ function select(id){
   const p=page(id);
   if(id==="footer"){draft=structuredClone(db.footer?.draft||{instagram:"",linkedin:"",legal:"",copyright:""});showFooter();}
   else if(id==="trash"){draft=null;showTrash();}
-  else if(p){draft=structuredClone(p.draft);showPage();}
+  else if(p){draft=structuredClone(p.draft);if(p.kind==="home"){for(const block of draft.blocks||[]){if(block.type==="image"&&block.alt==="Photo d\u0027accueil")block.alt="";}}showPage();}
   else{selected="home";draft=structuredClone(page("home")?.draft||{});showPage();}
   document.querySelectorAll("[data-select]").forEach(btn=>btn.classList.toggle("active",btn.dataset.select===selected));
 }

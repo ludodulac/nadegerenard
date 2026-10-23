@@ -109,9 +109,10 @@ function galleryProjects(){
     '<p class="field-tip">Chaque photo avec son titre blanc ouvre une page de réalisation. Les changements de titre et de photo sont enregistrés en brouillon ici.</p>'+
     children.map(p=>'<article class="project-editor-card" id="project-'+esc(p.id)+'">'+
       '<div class="gallery-card project-card-preview '+(imageOK(p.draft.cover)?"":"no-image")+'">'+
+        '<div class="gallery-photo">'+
         (imageOK(p.draft.cover)?'<img src="'+esc(p.draft.cover)+'" alt="">':'<span class="project-photo-placeholder">Photographie à ajouter</span>')+
-        '<span class="gallery-caption" data-project-caption="'+esc(p.id)+'">'+esc(p.draft.title)+'</span>'+
-         '<span class="gallery-credit" data-project-credit-preview="'+esc(p.id)+'"'+(copyrightText(p.draft.coverCredit)?'':' hidden')+'>'+esc(copyrightText(p.draft.coverCredit))+'</span></div>'+
+        '<span class="gallery-caption" data-project-caption="'+esc(p.id)+'">'+esc(p.draft.title)+'</span></div>'+
+        '<span class="gallery-credit" data-project-credit-preview="'+esc(p.id)+'"'+(!imageOK(p.draft.cover)||!copyrightText(p.draft.coverCredit)?' hidden':'')+'>'+esc(copyrightText(p.draft.coverCredit))+'</span></div>'+
       '<div class="admin-field"><label for="project-name-'+esc(p.id)+'">Nom affiché en blanc sur la photo</label>'+
         '<input id="project-name-'+esc(p.id)+'" data-project-title="'+esc(p.id)+'" maxlength="180" value="'+esc(p.draft.title)+'"></div>'+
       '<div class="admin-field"><label>Photographie de cette réalisation</label>'+
@@ -216,7 +217,7 @@ function bindProjectCards(){
     const p=page(el.dataset.projectCredit);if(!p)return;
     p.draft.coverCredit=el.value;
     const preview=document.querySelector('[data-project-credit-preview="'+el.dataset.projectCredit+'"]');
-    if(preview){preview.textContent=copyrightText(el.value);preview.hidden=!copyrightText(el.value);}
+    if(preview){preview.textContent=copyrightText(el.value);preview.hidden=!imageOK(p.draft.cover)||!copyrightText(el.value);}
   }));
   document.querySelectorAll("[data-project-title]").forEach(el=>el.addEventListener("input",()=>{
     const caption=document.querySelector('[data-project-caption="'+el.dataset.projectTitle+'"]');
@@ -286,8 +287,8 @@ function previewBlock(b){
     if(!imageOK(b.src))return "";
     const caption=b.caption??b.alt??"";
     return '<figure class="block-image"><img src="'+esc(b.src)+'" alt="'+esc(b.alt||caption)+'">'+
-      (caption.trim()?'<figcaption class="image-caption">'+esc(caption).replace(/\n/g,"<br>")+'</figcaption>':"")+
-      (copyrightText(b.credit)?'<p class="photo-credit">'+esc(copyrightText(b.credit))+'</p>':"")+'</figure>';
+      (copyrightText(b.credit)?'<p class="photo-credit">'+esc(copyrightText(b.credit))+'</p>':"")+
+      (caption.trim()?'<figcaption class="image-caption">'+esc(caption).replace(/\n/g,"<br>")+'</figcaption>':"")+'</figure>';
   }
   case "press":return (b.title?.trim()?'<h3 class="press-card-title '+alignClass(b.align)+'">'+esc(b.title)+'</h3>':"")+
       (imageOK(b.src)?'<figure><img src="'+esc(b.src)+'" alt="">'+(copyrightText(b.credit)?'<figcaption class="photo-credit">'+esc(copyrightText(b.credit))+'</figcaption>':"")+'</figure>':"");
@@ -309,7 +310,7 @@ function drawPreview(){
   const p=page(selected);
   const gallery=p?.kind==="gallery"?'<div class="gallery-list">'+
     allVisible().filter(x=>x.kind==="detail"&&x.parent_id===p.id&&imageOK(x.draft.cover)).map(x=>
-      '<div class="gallery-card"><img src="'+esc(x.draft.cover)+'" alt=""><span class="gallery-caption">'+esc(x.draft.title)+'</span>'+
+      '<div class="gallery-card"><div class="gallery-photo"><img src="'+esc(x.draft.cover)+'" alt=""><span class="gallery-caption">'+esc(x.draft.title)+'</span></div>'+
         (copyrightText(x.draft.coverCredit)?'<span class="gallery-credit">'+esc(copyrightText(x.draft.coverCredit))+'</span>':"")+'</div>').join("")+'</div>':"";
   const previewItems=draft.blocks.map(b=>({b,html:previewBlock(b)})).filter(x=>x.html);
   const detailText=previewItems.filter(x=>x.b.type!=="image").map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");

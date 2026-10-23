@@ -21,7 +21,7 @@ function normalizePage(value) {
       url:cleanText(item.url,800), lineHeight:["normal","large","extra"].includes(item.lineHeight)?item.lineHeight:"normal"
     };
   });
-  const raw={title:cleanText(value.title,180),subtitle:cleanText(value.subtitle,600),titleAlign:value.titleAlign==="center"?"center":"left",subtitleAlign:value.subtitleAlign==="center"?"center":"left",cover:cleanText(value.cover,400),blocks};
+  const raw={title:cleanText(value.title,180),subtitle:cleanText(value.subtitle,600),description:cleanText(value.description,15000),titleAlign:value.titleAlign==="center"?"center":"left",subtitleAlign:value.subtitleAlign==="center"?"center":"left",descriptionAlign:value.descriptionAlign==="center"?"center":"left",cover:cleanText(value.cover,400),blocks};
   if(!raw.title) throw Error("Le titre ne peut pas être vide");
   if(JSON.stringify(raw).length>100000) throw Error("Contenu trop volumineux");
   for(const b of blocks) {
@@ -115,7 +115,7 @@ async function adminApi(req,env,path) {
       kind="detail";parent_id=parentId;
     }
     const id=crypto.randomUUID(),slug=slugify(title)+"-"+id.slice(0,6);
-    const data={title,subtitle:"",titleAlign:"left",subtitleAlign:"left",cover:"",blocks:[]};
+    const data={title,subtitle:"",description:"",titleAlign:"left",subtitleAlign:"left",descriptionAlign:"left",cover:"",blocks:[]};
     const index=await env.DB.prepare("SELECT MAX(nav_order) as x FROM pages").first();
     const nav_order=Number(index?.x||0)+1;
     await env.DB.prepare("INSERT INTO pages(id,slug,kind,parent_id,nav_order,is_core,is_trashed,draft_json,published_json) VALUES(?,?,?,?,?,0,0,?,NULL)")
@@ -130,6 +130,23 @@ async function adminApi(req,env,path) {
   }
   if(path==="/api/admin/publish"){
     const input=await body(req),id=cleanText(input.id,100);
+    const row=await env.DB.prepare("SELECT kind,slug,draft_json,published_json FROM pages WHERE id=? AND is_trashed=0").bind(id).first();
+    if(!row)return fail("Page introuvable",404);
+    if(row.kind==="detail"){
+      const detail=normalizePage(JSON.parse(row.draft_json));
+      if(!detail.cover)return fail("Ajoutez une photographie de présentation dans la galerie avant de publier.",400);
+      let nextSlug=row.slug;
+      const oldTitle=row.published_json?JSON.parse(row.published_json).title:null;
+      if(oldTitle!==detail.title){
+        const base=slugify(detail.title);
+        const all=await env.DB.prepare("SELECT slug FROM pages WHERE id != ?").bind(id).all();
+        const used=new Set(all.results.map(x=>x.slug));
+        nextSlug=base;
+        for(let n=1;used.has(nextSlug);n++)nextSlug=base.slice(0,Math.max(1,70-String(n).length-1))+"-"+n;
+      }
+      const result=await env.DB.prepare("UPDATE pages SET slug=?,published_json=draft_json,updated_at=CURRENT_TIMESTAMP WHERE id=? AND is_trashed=0").bind(nextSlug,id).run();
+      return result.meta.changes?json({ok:true,slug:nextSlug}):fail("Page introuvable",404);
+    }
     const result=await env.DB.prepare("UPDATE pages SET published_json=draft_json,updated_at=CURRENT_TIMESTAMP WHERE id=? AND is_trashed=0").bind(id).run();
     return result.meta.changes?json({ok:true}):fail("Page introuvable",404);
   }

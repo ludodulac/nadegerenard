@@ -43,6 +43,8 @@ test("ajouter une réalisation crée immédiatement une fiche modifiable sans ex
   assert.equal(result.nav_order,8);
   assert.equal(result.draft.title,"Nouvelle réalisation");
   assert.equal(result.draft.titleAlign,"left");
+  assert.equal(result.draft.description,"");
+  assert.equal(result.draft.descriptionAlign,"left");
   assert.equal(result.draft.cover,"");
   assert.deepEqual(result.draft.blocks,[]);
   assert.match(result.slug,/^nouvelle-realisation-[a-f0-9]{6}$/);
@@ -57,10 +59,18 @@ test("l'ajout en galerie sans dialogue et les liens sociaux ne rendent que le co
   const styles=readFileSync(new URL("../public/styles.css",import.meta.url),"utf8");
   assert.ok(admin.includes('const title=isProject?"Nouvelle réalisation":prompt'));
   assert.ok(admin.includes('db.pages.push({...created'));
+  assert.ok(admin.includes('function galleryProjects()'));
+  assert.ok(admin.includes('data-project-upload'));
+  assert.ok(admin.includes('Modifier la page de cette réalisation'));
+  assert.ok(admin.includes('sidebar-divider'));
+  assert.ok(admin.includes('data-project-caption'));
   assert.ok(admin.includes('class="align-button '));
   assert.ok(site.includes('if(safeLink(f.linkedin))social.push'));
   assert.ok(site.includes('if(safeLink(f.instagram))social.push'));
   assert.ok(site.includes('class="social-icon"'));
-  assert.ok(site.includes('const cover=p.kind==="detail"'));
+  assert.ok(!site.includes('const cover=p.kind==="detail"'));
+  assert.ok(site.includes('const body=p.kind==="detail"?description+detailText'));
+  assert.ok(site.includes('gallery-card'));
+  assert.ok(site.includes('gallery-caption'));
   assert.ok(styles.includes('.content-block.block-wrap-label{margin-bottom:14px}'));
 });

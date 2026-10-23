@@ -82,3 +82,9 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
 .legal-text{white-space:pre-wrap;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
 .inline-privacy{background:none;border:0;padding:0;color:inherit;text-decoration:underline;text-underline-offset:2px;font-size:inherit;cursor:pointer}
 .inline-privacy:hover{color:#111}
+
+/* Mise en page des mentions légales courtes : titres nets, trous lisibles. */
+#legal-text.legal-text{white-space:normal}
+#legal-text .legal-section{margin:24px 0}
+#legal-text .legal-section h3{font-size:16px;font-weight:650;line-height:1.4;color:#242424;margin:0 0 8px}
+#legal-text .legal-section p{font-size:14px;line-height:1.7;margin:0;overflow-wrap:anywhere}

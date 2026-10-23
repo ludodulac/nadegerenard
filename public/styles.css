@@ -396,7 +396,8 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
 
 /* Ajustements demandés : titres de presse lisibles et en gras sur ordinateur. */
 @media (min-width:861px){
-  .press-card-title{
+  .press-card-title,
+  .preview-content .press-card-title{
     font-size:16px;
     font-weight:700;
     line-height:1.35;

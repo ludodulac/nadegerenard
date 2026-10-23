@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Administration — Nadège Renard</title>
+<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/admin.css">
+<script type="module" src="/admin.js"></script>
+</head>
+<body>
+<header class="admin-head"><a href="/" class="site-brand">Nadège Renard</a><span>ADMINISTRATION</span><button id="logout" class="ghost" hidden>Déconnexion</button></header>
+<main>
+  <section id="login-view" class="login-card" hidden>
+    <h1>ADMINISTRATION</h1><p>Accès réservé à Nadège Renard.</p>
+    <form id="login-form"><label for="password">Mot de passe</label><input id="password" type="password" name="password" autocomplete="current-password" required>
+    <button type="submit" class="black-button">Se connecter</button><p id="login-error" class="error" role="alert"></p></form>
+  </section>
+  <section id="editor-view" class="editor-layout" hidden>
+    <aside class="admin-sidebar">
+      <h2>LES PAGES</h2><div id="page-list" class="admin-page-list"></div>
+      <button type="button" id="add-page" class="side-action">＋ Ajouter une page</button>
+      <button type="button" id="select-footer" class="side-action">Pied de page et mentions légales</button>
+      <button type="button" id="select-trash" class="side-action">Corbeille</button>
+      <p class="hint">Les changements restent privés tant que vous n'avez pas cliqué sur PUBLIER.</p>
+    </aside>
+    <div class="editor-body">
+      <div class="editor-top"><div><span class="eyebrow">MODIFICATION DU SITE</span><h1 id="editor-title">Choisir une page</h1></div>
+        <div id="actions" class="actions" hidden>
+          <button id="save" type="button" class="outline-button">Enregistrer le brouillon</button>
+          <button id="publish" type="button" class="black-button">PUBLIER</button>
+        </div></div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <div id="editing-panel"></div>
+      <section id="preview" class="preview-section" hidden><h2>APERÇU PRIVÉ — NON PUBLIÉ</h2><div id="preview-content" class="preview-content"></div></section>
+    </div>
+  </section>
+</main>
+</body>
+</html>

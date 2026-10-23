@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { normalizePage } from "../src/worker.js";
 
-test("les textes sont centrés par défaut même dans les pages créées avant l'option", () => {
+test("les textes sont alignés à gauche par défaut, y compris les pages anciennes", () => {
   const page = normalizePage({
     title: "NADÈGE RENARD",
     subtitle: "scénographe/peintre",
@@ -13,10 +13,10 @@ test("les textes sont centrés par défaut même dans les pages créées avant l
       { type: "text", text: "Un parcours" },
     ],
   });
-  assert.equal(page.titleAlign, "center");
-  assert.equal(page.subtitleAlign, "center");
-  assert.equal(page.blocks[0].align, "center");
-  assert.equal(page.blocks[1].align, "center");
+  assert.equal(page.titleAlign, "left");
+  assert.equal(page.subtitleAlign, "left");
+  assert.equal(page.blocks[0].align, "left");
+  assert.equal(page.blocks[1].align, "left");
 });
 
 test("Nadège peut placer chaque titre et texte à gauche indépendamment", () => {
@@ -38,9 +38,9 @@ test("les valeurs inattendues d'alignement ne sont pas publiées", () => {
     title: "PRESSE", titleAlign: "justify", subtitleAlign: "right",
     blocks: [{ type: "label", text: "Presse", align: "<script>" }],
   });
-  assert.equal(page.titleAlign, "center");
-  assert.equal(page.subtitleAlign, "center");
-  assert.equal(page.blocks[0].align, "center");
+  assert.equal(page.titleAlign, "left");
+  assert.equal(page.subtitleAlign, "left");
+  assert.equal(page.blocks[0].align, "left");
 });
 
 test("le site ne montre plus les faux libellés Photo d'accueil / Photographie à venir", () => {

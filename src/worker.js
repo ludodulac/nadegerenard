@@ -16,12 +16,12 @@ function normalizePage(value) {
   const blocks=value.blocks.map(item=>{
     if (!item || !ALLOWED_BLOCKS.has(item.type)) throw Error("Type de bloc inconnu");
     return {
-      type:item.type, align:item.align==="left"?"left":"center", text:cleanText(item.text,15000), title:cleanText(item.title,400),
+      type:item.type, align:item.align==="center"?"center":"left", text:cleanText(item.text,15000), title:cleanText(item.title,400),
       src:cleanText(item.src,400), alt:cleanText(item.alt,250),
       url:cleanText(item.url,800), lineHeight:["normal","large","extra"].includes(item.lineHeight)?item.lineHeight:"normal"
     };
   });
-  const raw={title:cleanText(value.title,180),subtitle:cleanText(value.subtitle,600),titleAlign:value.titleAlign==="left"?"left":"center",subtitleAlign:value.subtitleAlign==="left"?"left":"center",cover:cleanText(value.cover,400),blocks};
+  const raw={title:cleanText(value.title,180),subtitle:cleanText(value.subtitle,600),titleAlign:value.titleAlign==="center"?"center":"left",subtitleAlign:value.subtitleAlign==="center"?"center":"left",cover:cleanText(value.cover,400),blocks};
   if(!raw.title) throw Error("Le titre ne peut pas être vide");
   if(JSON.stringify(raw).length>100000) throw Error("Contenu trop volumineux");
   for(const b of blocks) {
@@ -105,7 +105,8 @@ async function adminApi(req,env,path) {
     return json({url:"/media/"+key});
   }
   if(path==="/api/admin/create"){
-    const input=await body(req),title=cleanText(input.title,180),parentId=cleanText(input.parentId,100);
+    const input=await body(req),parentId=cleanText(input.parentId,100);
+    const title=cleanText(input.title,180)||(parentId?"Nouvelle réalisation":"");
     if(!title) return fail("Titre requis");
     let kind="page",parent_id=null;
     if(parentId){
@@ -114,11 +115,12 @@ async function adminApi(req,env,path) {
       kind="detail";parent_id=parentId;
     }
     const id=crypto.randomUUID(),slug=slugify(title)+"-"+id.slice(0,6);
-    const data={title,subtitle:"",cover:"",blocks:[]};
+    const data={title,subtitle:"",titleAlign:"left",subtitleAlign:"left",cover:"",blocks:[]};
     const index=await env.DB.prepare("SELECT MAX(nav_order) as x FROM pages").first();
+    const nav_order=Number(index?.x||0)+1;
     await env.DB.prepare("INSERT INTO pages(id,slug,kind,parent_id,nav_order,is_core,is_trashed,draft_json,published_json) VALUES(?,?,?,?,?,0,0,?,NULL)")
-      .bind(id,slug,kind,parent_id,Number(index?.x||0)+1,JSON.stringify(data)).run();
-    return json({id,slug});
+      .bind(id,slug,kind,parent_id,nav_order,JSON.stringify(data)).run();
+    return json({id,slug,kind,parent_id,nav_order,draft:data});
   }
   if(path==="/api/admin/save"){
     const input=await body(req);const normalized=normalizePage(input.content);

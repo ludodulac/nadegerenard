@@ -1,6 +1,8 @@
 name: Publier aperçu Cloudflare Nadège
 on:
   workflow_dispatch:
+  push:
+    branches: [feat/site-v1-cms]
 permissions:
   contents: read
 jobs:

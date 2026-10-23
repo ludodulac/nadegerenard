@@ -19,7 +19,15 @@
 .form-card,.block-editor{border:1px solid var(--line);padding:24px;margin:22px 0;background:#fff}
 .form-card h3,.block-editor h3{font-weight:500;font-size:19px;margin:0 0 17px}
 .admin-field{display:flex;flex-direction:column;gap:7px;margin:13px 0 21px}
-.admin-field label{color:#555;font-size:13px}.admin-field input,.admin-field textarea,.admin-field select{width:100%;background:white;border:1px solid #b5b5b5;padding:12px;color:#222;border-radius:0;min-width:0}
+.admin-field label{color:#555;font-size:13px}
+.field-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.align-controls{display:inline-flex;gap:2px;flex-shrink:0;border:1px solid #b5b5b5}
+.align-button{display:inline-grid;place-items:center;width:32px;height:30px;padding:4px;border:0;background:#fff;color:#333;cursor:pointer}
+.align-button+ .align-button{border-left:1px solid #ddd}
+.align-button svg{width:20px;height:20px}
+.align-button.is-active{background:#222;color:#fff}
+.align-button:focus-visible{outline:2px solid #555;outline-offset:2px}
+.align-button:hover:not(.is-active){background:#eee}.admin-field input,.admin-field textarea,.admin-field select{width:100%;background:white;border:1px solid #b5b5b5;padding:12px;color:#222;border-radius:0;min-width:0}
 .admin-field textarea{min-height:125px;resize:vertical}
 .field-tip{font-size:12px;color:#888}.block-bar{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:8px}
 .block-bar .move-actions{display:flex;gap:7px}.mini{background:white;color:#333;border:1px solid #aaa;padding:7px 10px;font-size:12px}

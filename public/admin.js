@@ -2,7 +2,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const imageOK=s=>/^\/media\/[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(String(s||""));
 const externalOK=s=>{try{return new URL(s).protocol==="https:";}catch{return false;}};
-const alignClass=value=>value==="left"?"align-left":"align-center";
+const alignClass=value=>value==="center"?"align-center":"align-left";
 const blockNames={heading:"Grand titre",subtitle:"Sous-titre",label:"Petit titre",text:"Texte",image:"Photographie",press:"Article de presse"};
 let db={pages:[],footer:null},selected="home",draft=null,dirty=false;
 const error=e=>{const el=$("#status");el.textContent=String(e);el.classList.add("error");};
@@ -44,15 +44,24 @@ function select(id){
 }
 function renderField(label,key,value,opts={}){
   const id="field-"+key;
-  return '<div class="admin-field"><label for="'+id+'">'+esc(label)+'</label>'+
+  return '<div class="admin-field"><div class="field-heading"><label for="'+id+'">'+esc(label)+'</label>'+
+    (opts.alignKey?alignmentButtons(opts.alignValue,'data-align-key="'+opts.alignKey+'"',label):"")+'</div>'+
     (opts.multiline?'<textarea id="'+id+'" data-key="'+key+'" rows="'+(opts.rows||5)+'">'+esc(value)+'</textarea>':
       '<input id="'+id+'" data-key="'+key+'" value="'+esc(value)+'" '+(opts.type?'type="'+opts.type+'"':"")+'>')+
     (opts.hint?'<span class="field-tip">'+esc(opts.hint)+'</span>':"")+'</div>';
 }
-function alignmentField(value,attrs,label="Alignement du texte"){
-  return '<div class="admin-field"><label>'+esc(label)+'</label><select '+attrs+'>'+
-    '<option value="center" '+(value==="left"?"":"selected")+'>Centré</option>'+
-    '<option value="left" '+(value==="left"?"selected":"")+'>À gauche</option></select></div>';
+function alignmentButtons(value,attrs,label="Alignement du texte"){
+  const selected=value==="center"?"center":"left";
+  const icons={
+    left:'<path d="M3 5h18M3 9h12M3 13h18M3 17h12"/>',
+    center:'<path d="M3 5h18M6 9h12M3 13h18M6 17h12"/>'
+  };
+  return '<span class="align-controls" role="group" aria-label="'+esc(label)+'">'+
+    ["left","center"].map(v=>'<button type="button" class="align-button '+(selected===v?"is-active":"")+
+      '" data-align-value="'+v+'" '+attrs+' aria-label="'+(v==="left"?"Aligner à gauche":"Centrer")+
+      '" aria-pressed="'+(selected===v)+'" title="'+(v==="left"?"Aligner à gauche":"Centrer")+'">'+
+      '<svg viewBox="0 0 24 22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">'+icons[v]+'</svg></button>').join("")+
+    '</span>';
 }
 function choosePhoto(path,current,label="Photographie"){
   const id="media-"+path.replaceAll(":","-");
@@ -64,7 +73,9 @@ function choosePhoto(path,current,label="Photographie"){
 function renderBlock(b,i){
   const textField=(label,key="text",rows=4)=>{
     const id="block-"+i+"-"+key;
-    return '<div class="admin-field"><label for="'+id+'">'+esc(label)+'</label><textarea id="'+id+'" data-block="'+i+'" data-bkey="'+key+'" rows="'+rows+'">'+esc(b[key]||"")+'</textarea></div>';
+    return '<div class="admin-field"><div class="field-heading"><label for="'+id+'">'+esc(label)+'</label>'+
+      (b.type!=="image"?alignmentButtons(b.align,'data-align-block="'+i+'"',label):"")+'</div>'+
+      '<textarea id="'+id+'" data-block="'+i+'" data-bkey="'+key+'" rows="'+rows+'">'+esc(b[key]||"")+'</textarea></div>';
   };
   let inner="";
   if(b.type==="text"){
@@ -77,7 +88,6 @@ function renderBlock(b,i){
   else if(b.type==="press"){
     inner=textField("Titre au-dessus de la photographie","title",2)+choosePhoto("block:"+i,b.src)+textField("Adresse https:// de l’article","url",2);
   }else inner=textField(blockNames[b.type]);
-  if(b.type!=="image")inner+=alignmentField(b.align,'data-block="'+i+'" data-bkey="align"');
   return '<div class="block-editor" data-block-wrapper="'+i+'"><div class="block-bar"><h3>'+blockNames[b.type]+' '+(i+1)+'</h3>'+
     '<div class="move-actions"><button class="mini" data-up="'+i+'" aria-label="Monter">↑</button>'+
     '<button class="mini" data-down="'+i+'" aria-label="Descendre">↓</button>'+
@@ -88,10 +98,8 @@ function showPage(){
   $("#editor-title").textContent=draft.title;$("#actions").hidden=false;$("#preview").hidden=false;
   const kind=p.kind;
   let html='<section class="form-card"><h3>Contenu principal</h3>'+
-    renderField("Grand titre de la page","title",draft.title)+
-    alignmentField(draft.titleAlign,'data-key="titleAlign"',"Alignement du grand titre")+
-    renderField("Sous-titre (facultatif)","subtitle",draft.subtitle||"",{multiline:true,rows:2})+
-    alignmentField(draft.subtitleAlign,'data-key="subtitleAlign"',"Alignement du sous-titre")+
+    renderField("Grand titre de la page","title",draft.title,{alignKey:"titleAlign",alignValue:draft.titleAlign})+
+    renderField("Sous-titre (facultatif)","subtitle",draft.subtitle||"",{multiline:true,rows:2,alignKey:"subtitleAlign",alignValue:draft.subtitleAlign})+
     (kind==="detail"?choosePhoto("cover",draft.cover,"Image de couverture affichée dans la galerie"):"")+
     '</section><h3>Éléments de la page</h3>';
   if(kind==="gallery"){
@@ -113,6 +121,17 @@ function bindContentFields(){
   $("#editing-panel").querySelectorAll("[data-block]").forEach(el=>el.addEventListener("input",()=>{
     draft.blocks[Number(el.dataset.block)][el.dataset.bkey]=el.value;markDirty();
   }));
+  $("#editing-panel").querySelectorAll("[data-align-value]").forEach(el=>el.addEventListener("click",()=>{
+    const value=el.dataset.alignValue;
+    if(el.dataset.alignBlock!==undefined)draft.blocks[Number(el.dataset.alignBlock)].align=value;
+    else draft[el.dataset.alignKey]=value;
+    el.parentElement.querySelectorAll("[data-align-value]").forEach(button=>{
+      const active=button.dataset.alignValue===value;
+      button.classList.toggle("is-active",active);
+      button.setAttribute("aria-pressed",String(active));
+    });
+    markDirty();
+  }));
   $("#editing-panel").querySelectorAll("[data-upload]").forEach(el=>el.addEventListener("change",async()=>{
     const file=el.files?.[0];if(!file)return;
     if(file.size>8*1024*1024){error("Photographie trop volumineuse (8 Mo maximum)");return;}
@@ -131,7 +150,7 @@ function setPhoto(path,url){
 }
 function bindButtons(){
   $("#editing-panel").querySelectorAll("[data-add]").forEach(btn=>btn.addEventListener("click",()=>{
-    const type=btn.dataset.add;draft.blocks.push({type,text:"",title:"",src:"",url:"",alt:"",lineHeight:"normal",align:"center"});markDirty();showPage();
+    const type=btn.dataset.add;draft.blocks.push({type,text:"",title:"",src:"",url:"",alt:"",lineHeight:"normal",align:"left"});markDirty();showPage();
   }));
   $("#editing-panel").querySelectorAll("[data-remove]").forEach(btn=>btn.addEventListener("click",()=>{draft.blocks.splice(Number(btn.dataset.remove),1);markDirty();showPage();}));
   $("#editing-panel").querySelectorAll("[data-up]").forEach(btn=>btn.addEventListener("click",()=>move(Number(btn.dataset.up),-1)));
@@ -174,7 +193,7 @@ function drawPreview(){
     '<p>'+esc(x.draft.title)+'</p></div>').join("");
   target.innerHTML='<h1 class="page-title '+alignClass(draft.titleAlign)+'">'+esc(draft.title)+'</h1>'+(draft.subtitle?'<p class="page-subtitle '+alignClass(draft.subtitleAlign)+'">'+esc(draft.subtitle)+'</p>':"")+
     (p?.kind==="detail"&&imageOK(draft.cover)?'<img src="'+esc(draft.cover)+'" alt="">':"")+
-    draft.blocks.map(previewBlock).filter(Boolean).map(content=>'<section class="content-block">'+content+'</section>').join("")+gallery;
+    draft.blocks.map(b=>({b,html:previewBlock(b)})).filter(x=>x.html).map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("")+gallery;
 }
 function showFooter(){
   $("#editor-title").textContent="Pied de page";$("#actions").hidden=false;$("#preview").hidden=false;
@@ -209,13 +228,25 @@ async function publish(){
   await stateLoad();notice("Modifications publiées sur le site !");
 }
 async function createPage(parentId=null){
-  const title=prompt(parentId?"Nom de la réalisation":"Titre de la nouvelle page");
-  if(!title||!title.trim())return;
+  const isProject=Boolean(parentId);
   if(dirty && !confirm("Les modifications en cours ne sont pas enregistrées. Continuer ?"))return;
+  const title=isProject?"Nouvelle réalisation":prompt("Titre de la nouvelle page");
+  if(!title||!title.trim())return;
+  const trigger=isProject?$("#add-project"):$("#add-page");
+  if(trigger?.disabled)return;
+  if(trigger)trigger.disabled=true;
   try{
-    const result=await api("create",{title,parentId});
-    selected=result.id;await stateLoad();notice("Page créée en brouillon. Ajoutez son contenu, puis publiez-la.");
-  }catch(e){error(e.message);}
+    const created=await api("create",{title,parentId});
+    if(!created.id||!created.draft)throw Error("Réponse de création incomplète");
+    db.pages.push({...created,published:null,draft:created.draft,is_trashed:0,is_core:0});
+    dirty=false;
+    drawSidebar();
+    select(created.id);
+    notice(isProject
+      ?"Réalisation créée. Ajoutez une image de galerie, modifiez le titre puis cliquez sur PUBLIER pour la rendre visible."
+      :"Page créée en brouillon. Ajoutez son contenu, puis publiez-la.");
+  }catch(e){error("Impossible de créer "+(isProject?"la réalisation":"la page")+" : "+e.message);}
+  finally{if(trigger?.isConnected)trigger.disabled=false;}
 }
 async function trashPage(){
   if(!confirm("Déplacer cette page dans la corbeille ? Vous pourrez la restaurer."))return;

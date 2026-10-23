@@ -12,6 +12,8 @@ test("refuse les blocs dangereux et les liens javascript",()=>{
 });
 test("conserve un contenu valide et les préférences de lignes",()=>{
   const d=normalizePage({title:"ACCUEIL",subtitle:"scénographe/peintre",blocks:[{type:"text",text:"Bonjour **Nadège**",lineHeight:"large"}]});
+  assert.equal(d.titleAlign,"left");
+  assert.equal(d.blocks[0].align,"left");
   assert.equal(d.blocks[0].lineHeight,"large");
   assert.equal(d.blocks[0].text,"Bonjour **Nadège**");
 });
@@ -33,10 +35,10 @@ test("préserve les alignements gauche ou centré après sauvegarde",()=>{
   assert.equal(d.subtitleAlign,"center");
   assert.equal(d.blocks[0].align,"left");
   assert.equal(d.blocks[1].align,"center");
-  assert.equal(d.blocks[2].align,"center");
+  assert.equal(d.blocks[2].align,"left");
 
   const invalid=normalizePage({title:"Test",titleAlign:"right",subtitleAlign:"justify",blocks:[{type:"text",text:"Bonjour",align:"right"}]});
-  assert.equal(invalid.titleAlign,"center");
-  assert.equal(invalid.subtitleAlign,"center");
-  assert.equal(invalid.blocks[0].align,"center");
+  assert.equal(invalid.titleAlign,"left");
+  assert.equal(invalid.subtitleAlign,"left");
+  assert.equal(invalid.blocks[0].align,"left");
 });

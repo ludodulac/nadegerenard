@@ -6,6 +6,26 @@ const externalOK=s=>{try{return new URL(s).protocol==="https:";}catch{return fal
 const alignClass=value=>value==="center"?"align-center":"align-left";
 const blockNames={heading:"Grand titre",subtitle:"Sous-titre",label:"Petit titre",text:"Texte",image:"Photographie",press:"Article de presse"};
 let db={pages:[],footer:null},selected="home",draft=null,dirty=false;
+let pageDirty=false,pageRevision=0,pendingProjects=new Map(),saveState="ready",saveInFlight=null;
+function syncDirty(){dirty=pageDirty||pendingProjects.size>0;}
+function updateFloatingSave(){
+  const panel=$("#floating-save"),button=$("#floating-save-button"),status=$("#floating-save-status");
+  if(!panel||!button||!status)return;
+  const editing=!$("#editor-view").hidden&&selected!=="trash"&&draft!==null;
+  panel.hidden=!editing;
+  if(!editing)return;
+  const state=saveInFlight?"saving":dirty?"dirty":saveState;
+  panel.dataset.state=state;
+  status.textContent=({
+    ready:"Aucun changement",dirty:"● Modifications à enregistrer",
+    saving:"Enregistrement…",saved:"✓ Brouillon enregistré",
+    error:"Échec de l'enregistrement"
+  })[state]||"Aucun changement";
+  button.textContent=state==="saving"?"Enregistrement…":"Enregistrer";
+  button.disabled=!!saveInFlight;
+  $("#save").disabled=!!saveInFlight;
+  $("#publish").disabled=!!saveInFlight;
+}
 const error=e=>{const el=$("#status");el.textContent=String(e);el.classList.add("error");};
 const notice=s=>{const el=$("#status");el.textContent=s;el.classList.remove("error");};
 async function api(route,data){
@@ -36,13 +56,14 @@ function drawSidebar(){
 }
 function select(id){
   if(dirty && selected!==id && !confirm("Des modifications n’ont pas été enregistrées. Voulez-vous vraiment changer de page ?"))return;
-  selected=id;dirty=false;
+  selected=id;dirty=false;pageDirty=false;pageRevision=0;pendingProjects.clear();saveState="ready";
   const p=page(id);
   if(id==="footer"){draft=structuredClone(db.footer?.draft||{instagram:"",linkedin:"",legal:"",copyright:""});draft.legalDetails??={};showFooter();}
   else if(id==="trash"){draft=null;showTrash();}
   else if(p){draft=structuredClone(p.draft);if(p.kind==="home"){for(const block of draft.blocks||[]){if(block.type==="image"&&block.alt==="Photo d\u0027accueil")block.alt="";}}showPage();}
   else{selected="home";draft=structuredClone(page("home")?.draft||{});showPage();}
   document.querySelectorAll("[data-select]").forEach(btn=>btn.classList.toggle("active",btn.dataset.select===selected));
+  updateFloatingSave();
 }
 function renderField(label,key,value,opts={}){
   const id="field-"+key;
@@ -160,7 +181,17 @@ function showPage(){
   bindContentFields();bindButtons();bindProjectCards();drawPreview();
   if(!dirty)notice(p.published?"Page publiée. Les modifications restent privées avant le prochain clic sur PUBLIER.":"Brouillon non publié.");
 }
-function markDirty(){dirty=true;notice("Modifications non publiées. Enregistrez votre brouillon ou cliquez sur PUBLIER.");drawPreview();}
+function markDirty(){
+  pageDirty=true;pageRevision++;syncDirty();saveState="dirty";
+  notice("Modifications non enregistrées. Enregistrez le brouillon ou cliquez sur PUBLIER.");
+  updateFloatingSave();drawPreview();
+}
+function markProjectDirty(id){
+  pendingProjects.set(id,(pendingProjects.get(id)||0)+1);
+  syncDirty();saveState="dirty";
+  notice("Modification de réalisation non enregistrée. Enregistrez le brouillon ou cliquez sur PUBLIER.");
+  updateFloatingSave();drawPreview();
+}
 function bindContentFields(){
   $("#editing-panel").querySelectorAll("[data-pick-photo]").forEach(btn=>btn.addEventListener("click",()=>{
     document.getElementById(btn.dataset.pickPhoto)?.click();

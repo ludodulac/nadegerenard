@@ -65,11 +65,13 @@ function alignmentButtons(value,attrs,label="Alignement du texte"){
     '</span>';
 }
 function choosePhoto(path,current,label="Photographie"){
-  const id="media-"+path.replaceAll(":","-");
-  return '<div class="admin-field"><label for="'+id+'">'+esc(label)+' (JPG, PNG, WEBP, AVIF, max. 8 Mo)</label>'+
-    '<div class="upload-box"><input type="file" id="'+id+'" accept="image/jpeg,image/png,image/webp,image/avif" data-upload="'+esc(path)+'">'+
-    (current&&imageOK(current)?'<button type="button" class="mini" data-clear="'+esc(path)+'">Retirer la photo</button>':"")+'</div>'+
-    (imageOK(current)?'<img class="upload-preview" src="'+esc(current)+'" alt="Image sélectionnée">':'<span class="field-tip">Aucune photographie enregistrée</span>')+'</div>';
+  const id="media-"+path.replaceAll(":","-"),exists=imageOK(current);
+  return '<div class="admin-field"><label>'+esc(label)+' (JPG, PNG, WEBP, AVIF, max. 8 Mo)</label>'+
+    '<div class="upload-box"><button type="button" class="mini" data-pick-photo="'+id+'">'+(exists?"Remplacer la photographie":"Ajouter une photographie")+'</button>'+
+    '<span class="photo-upload-status">'+(exists?"✓ Photographie déjà enregistrée":"Aucune photographie enregistrée")+'</span>'+
+    '<input type="file" class="visually-hidden-file" id="'+id+'" aria-label="'+esc(label)+'" accept="image/jpeg,image/png,image/webp,image/avif" data-upload="'+esc(path)+'">'+
+    (exists?'<button type="button" class="mini" data-clear="'+esc(path)+'">Retirer la photo</button>':"")+'</div>'+
+    (exists?'<img class="upload-preview" src="'+esc(current)+'" alt="Image sélectionnée">':"")+'</div>';
 }
 function renderBlock(b,i){
   const textField=(label,key="text",rows=4)=>{
@@ -143,6 +145,9 @@ function showPage(){
 }
 function markDirty(){dirty=true;notice("Modifications non publiées. Enregistrez votre brouillon ou cliquez sur PUBLIER.");drawPreview();}
 function bindContentFields(){
+  $("#editing-panel").querySelectorAll("[data-pick-photo]").forEach(btn=>btn.addEventListener("click",()=>{
+    document.getElementById(btn.dataset.pickPhoto)?.click();
+  }));
   $("#editing-panel").querySelectorAll("[data-key]").forEach(el=>el.addEventListener("input",()=>{
     draft[el.dataset.key]=el.value;if(el.dataset.key==="title")$("#editor-title").textContent=el.value;markDirty();
   }));

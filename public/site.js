@@ -166,4 +166,6 @@ async function start(){
     state=await r.json();updateMenu();updateFooter();render();
   }catch(e){root.innerHTML='<div class="error-state">Le site est momentanément indisponible.</div>';}
 }
+// Les deux textes sont visibles immédiatement, même si l’API /api/site tarde ou échoue.
+updateFooter();
 start();

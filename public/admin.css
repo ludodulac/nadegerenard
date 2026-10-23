@@ -67,3 +67,11 @@
 .visually-hidden-file{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden!important;clip-path:inset(50%)!important;pointer-events:none!important}
 .preview-content .image-caption{font-size:16px;text-align:left}
 @media(max-width:600px){.project-photo-action{align-items:flex-start;flex-direction:column;gap:8px}}
+
+/* Textes pré-rédigés, lisibles même lorsque les informations légales manquent. */
+.legal-ready-card{background:#fdfdfd}
+.legal-ready{border:1px solid #ddd;margin:12px 0;background:white}
+.legal-ready summary{cursor:pointer;padding:14px 16px;font-size:14px;font-weight:600;line-height:1.5}
+.legal-ready summary:hover{background:#f5f5f5}
+.legal-ready[open] summary{border-bottom:1px solid #ddd}
+.legal-ready-preview{display:block;white-space:pre-wrap;overflow-wrap:anywhere;max-height:390px;overflow:auto;margin:0;padding:16px;font:inherit;font-size:13px;line-height:1.75;color:#2c2c2c;background:#fff}

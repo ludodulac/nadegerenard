@@ -38,16 +38,35 @@ test("les champs des mentions légales survivent à la sauvegarde et filtrent le
   }});
   assert.equal(f.legalDetails.siren,"123456789");
   assert.equal(f.legalDetails.inconnu,undefined);
-  assert.match(legalDocument(f),/SIREN : 123456789/);
-  assert.match(legalDocument(f),/INFORMATIONS COMPLÉMENTAIRES\nComplément/);
+  assert.match(legalDocument(f),/Numéro SIREN : 123456789/);
+  assert.match(legalDocument(f),/PRÉCISIONS COMPLÉMENTAIRES\nComplément/);
   assert.match(privacyDocument(f),/contact@example\.org/);
-  assert.match(legalDocument(f),/\[À compléter :/);
+  assert.match(legalDocument(f),/\[À COMPLÉTER :/);
 });
-test("l'ancien contenu juridique reste visible tant que les nouveaux champs sont vides",()=>{
-  assert.equal(legalDocument({legal:"Texte existant"}),"Texte existant");
-  assert.equal(legalDocument(normalizeFooter({legal:"Texte existant"})),"Texte existant");
-  assert.match(legalDocument({},true),/HÉBERGEMENT/);
+test("les DEUX textes sont complets avant toute saisie et comportent des trous explicites",()=>{
+  const mentions=legalDocument({});
+  const confidentialite=privacyDocument({});
+  assert.match(mentions,/PRÉSENTATION DU SITE/);
+  assert.match(mentions,/PROPRIÉTÉ INTELLECTUELLE ET CRÉDITS PHOTOGRAPHIQUES/);
+  assert.match(mentions,/HÉBERGEMENT DU SITE/);
+  assert.match(mentions,/\[À COMPLÉTER : adresse professionnelle\]/);
+  assert.match(confidentialite,/POLITIQUE DE CONFIDENTIALITÉ/);
+  assert.match(confidentialite,/DURÉE DE CONSERVATION/);
+  assert.match(confidentialite,/\[À COMPLÉTER : durée de conservation réellement appliquée\]/);
+  assert.ok(mentions.length>1000);
+  assert.ok(confidentialite.length>1000);
+});
+test("les anciens textes ne disparaissent pas et les champs complètent les deux documents",()=>{
+  assert.match(legalDocument({legal:"Texte existant"}),/PRÉCISIONS COMPLÉMENTAIRES\nTexte existant/);
+  assert.match(legalDocument(normalizeFooter({legal:"Texte existant"})),/PRÉSENTATION DU SITE/);
+  const f=normalizeFooter({legalDetails:{editorName:"Nadège Renard",email:"nadege@example.org"}});
+  assert.match(legalDocument(f),/édité par Nadège Renard/);
+  assert.match(privacyDocument(f),/nadege@example\.org/);
+  assert.match(legalDocument(f),/\[À COMPLÉTER : statut professionnel\]/);
   assert.match(html,/id="privacy-button"/);
   assert.match(html,/id="privacy-text"/);
   assert.match(site,/data-open-privacy/);
+  assert.match(site,/updateFooter\(\);\s*start\(\);/);
+  assert.match(admin,/id="legal-ready-preview"/);
+  assert.match(admin,/id="privacy-ready-preview"/);
 });

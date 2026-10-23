@@ -297,7 +297,11 @@ function previewBlock(b){
 function drawPreview(){
   if(selected==="trash")return;
   const target=$("#preview-content");if(!target)return;
-  if(selected==="footer"){target.innerHTML='<div style="background:#111;color:white;padding:25px">'+
+  if(selected==="footer"){
+    const legalPreview=document.querySelector("#legal-ready-preview"),privacyPreview=document.querySelector("#privacy-ready-preview");
+    if(legalPreview)legalPreview.textContent=legalDocument(draft);
+    if(privacyPreview)privacyPreview.textContent=privacyDocument(draft);
+    target.innerHTML='<div style="background:#111;color:white;padding:25px">'+
       '<p>CONTACT</p><p>'+esc(draft.instagram)+'</p><p>'+esc(draft.linkedin)+'</p>'+
       '<p>'+esc(draft.copyright)+'</p><h3>MENTIONS LÉGALES</h3><p style="white-space:pre-wrap">'+esc(legalDocument(draft,true))+'</p>'+
       '<h3>CONFIDENTIALITÉ</h3><p style="white-space:pre-wrap">'+esc(privacyDocument(draft))+'</p></div>';return;}
@@ -319,12 +323,16 @@ function drawPreview(){
 }
 function showFooter(){
   $("#editor-title").textContent="Pied de page";$("#actions").hidden=false;$("#preview").hidden=false;
-  $("#editing-panel").innerHTML='<section class="form-card"><h3>Réseaux sociaux</h3>'+
+  $("#editing-panel").innerHTML='<section class="form-card legal-ready-card"><h3>Les deux textes sont prêts</h3>'+
+    '<p class="field-tip">Cliquez sur un texte pour le lire. Les passages entre crochets [À COMPLÉTER] restent visibles tant que vous n’avez pas rempli les champs ci-dessous. Les champs sont enregistrés comme brouillon puis publiés avec PUBLIER.</p>'+
+    '<details open class="legal-ready"><summary>Voir les mentions légales déjà rédigées</summary><pre id="legal-ready-preview" class="legal-ready-preview"></pre></details>'+
+    '<details class="legal-ready"><summary>Voir la confidentialité déjà rédigée</summary><pre id="privacy-ready-preview" class="legal-ready-preview"></pre></details></section>'+
+    '<section class="form-card"><h3>Réseaux sociaux</h3>'+
     renderField("Lien Instagram (https://…)","instagram",draft.instagram)+
     renderField("Lien LinkedIn (https://…)","linkedin",draft.linkedin)+
     renderField("Texte de copyright","copyright",draft.copyright)+
     '</section><section class="form-card"><h3>Mentions légales — champs à remplir</h3>'+
-    '<p class="field-tip">Le texte juridique est préparé automatiquement. Renseignez les informations exactes, puis vérifiez l’aperçu avant publication. Les éléments manquants sont marqués [À compléter].</p>'+
+    '<p class="field-tip">Remplissez uniquement les champs que vous connaissez. Les textes complets sont visibles juste au-dessus ; les informations manquantes restent signalées par [À COMPLÉTER].</p>'+
     LEGAL_FIELDS.map(field=>{
       const key=field.key,value=draft.legalDetails?.[key]||"";
       return '<div class="admin-field"><label for="legal-'+key+'">'+esc(field.label)+'</label>'+

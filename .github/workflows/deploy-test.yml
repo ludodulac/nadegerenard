@@ -1,0 +1,31 @@
+name: Publier aperçu Cloudflare Nadège
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/feat/site-v1-cms'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+      - name: Préparer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Installer Wrangler
+        run: npm install --no-audit --no-fund
+      - name: Vérifier le code
+        run: |
+          node --check src/worker.js
+          node --check public/site.js
+          node --check public/admin.js
+          npm test
+      - name: Publier sur workers.dev du compte Nadège
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

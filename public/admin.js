@@ -124,7 +124,8 @@ function galleryProjects(){
          '<input id="project-credit-'+esc(p.id)+'" maxlength="200" data-project-credit="'+esc(p.id)+'" value="'+esc(p.draft.coverCredit||"")+'" placeholder="Ex. Sébastien Durand">'+
          '<span class="field-tip">Si renseigné : © suivi du nom, sinon aucun crédit.</span></div>'+
       '<div class="project-controls"><button type="button" class="outline-button" data-project-save="'+esc(p.id)+'">Enregistrer la photo et le titre</button>'+
-        '<button type="button" class="black-button" data-project-edit="'+esc(p.id)+'">Modifier la page de cette réalisation →</button></div>'+
+        '<button type="button" class="black-button" data-project-edit="'+esc(p.id)+'">Modifier la page de cette réalisation →</button>'+
+        '<button type="button" class="project-trash-button" data-project-trash="'+esc(p.id)+'" aria-label="Mettre la réalisation '+esc(p.draft.title)+' dans la corbeille">Mettre à la corbeille</button></div>'+
       '<p class="field-tip" data-project-status="'+esc(p.id)+'">'+(p.published?"Visible sur le site après sa dernière publication.":"Brouillon non publié.")+'</p></article>').join("")+
     '<button type="button" class="outline-button" id="add-project">＋ Ajouter une réalisation</button></section>';
 }
@@ -137,6 +138,11 @@ function showPage(){
     renderField("Sous-titre (facultatif)","subtitle",draft.subtitle||"",{multiline:true,rows:2,alignKey:"subtitleAlign",alignValue:draft.subtitleAlign})+
     (kind==="detail"?renderField("Texte sous le titre et le sous-titre","description",draft.description||"",{multiline:true,rows:8,alignKey:"descriptionAlign",alignValue:draft.descriptionAlign,hint:"Utilisez une ligne vide pour séparer les paragraphes."}):"")+
     '</section>';
+  // Une réalisation ne doit pas obliger à descendre après toutes ses photos pour être mise à la corbeille.
+  if(kind==="detail"&&!p.is_core){
+    html+='<div class="project-trash-top"><button type="button" id="move-trash" class="project-trash-button">Mettre cette réalisation à la corbeille</button>'+
+      '<span class="field-tip">Vous pourrez la restaurer depuis la corbeille. Les photos sont conservées.</span></div>';
+  }
   if(kind==="detail"){
     const legacy=draft.blocks.map((b,i)=>({b,i})).filter(x=>x.b.type!=="image");
     if(legacy.length)html+='<h3>Autres textes déjà enregistrés</h3>'+legacy.map(x=>renderBlock(x.b,x.i)).join("");
@@ -149,7 +155,7 @@ function showPage(){
       '<div class="block-buttons">'+Object.entries(blockNames).filter(([k])=>kind==="press"||k!=="press").map(([k,v])=>'<button type="button" data-add="'+k+'">＋ '+v+'</button>').join("")+'</div>';
     if(kind==="gallery")html+=galleryProjects();
   }
-  if(!p.is_core)html+='<hr class="section-line"><button type="button" id="move-trash" class="danger-button">Déplacer cette page dans la corbeille</button>';
+  if(!p.is_core&&kind!=="detail")html+='<hr class="section-line"><button type="button" id="move-trash" class="danger-button">Déplacer cette page dans la corbeille</button>';
   $("#editing-panel").innerHTML=html;
   bindContentFields();bindButtons();bindProjectCards();drawPreview();
   if(!dirty)notice(p.published?"Page publiée. Les modifications restent privées avant le prochain clic sur PUBLIER.":"Brouillon non publié.");
@@ -237,6 +243,13 @@ function bindProjectCards(){
       await saveProject(id);
       select(id);
     }catch(e){error(e.message);}
+    finally{if(btn.isConnected)btn.disabled=false;}
+  }));
+  // Le bouton est accessible directement sur chaque fiche de réalisation dans les galeries.
+  document.querySelectorAll("[data-project-trash]").forEach(btn=>btn.addEventListener("click",async()=>{
+    btn.disabled=true;
+    try{await movePageToTrash(btn.dataset.projectTrash);}
+    catch(e){error(e.message);}
     finally{if(btn.isConnected)btn.disabled=false;}
   }));
   document.querySelectorAll("[data-project-photo-pick]").forEach(button=>button.addEventListener("click",()=>{
@@ -360,7 +373,8 @@ function showTrash(){
   $("#editor-title").textContent="Corbeille";$("#actions").hidden=true;$("#preview").hidden=true;
   const items=db.pages.filter(p=>p.is_trashed);
   $("#editing-panel").innerHTML=items.length?items.map(p=>
-    '<div class="trash-item"><span>'+esc(p.draft.title)+'</span><button class="outline-button" data-restore="'+esc(p.id)+'">Restaurer</button></div>').join(""):
+    '<div class="trash-item"><span><small class="trash-kind">'+(p.kind==="detail"?"Réalisation":p.kind==="gallery"?"Galerie":"Page")+'</small><strong>'+esc(p.draft.title)+'</strong></span>'+
+    '<button type="button" class="outline-button" data-restore="'+esc(p.id)+'">Restaurer</button></div>').join(""):
     '<p class="empty-state">La corbeille est vide.</p>';
   document.querySelectorAll("[data-restore]").forEach(el=>el.addEventListener("click",async()=>{
     try{await api("restore",{id:el.dataset.restore});await stateLoad();select("trash");notice("Page restaurée.");}catch(e){error(e.message);}
@@ -408,9 +422,27 @@ async function createPage(parentId=null){
   }catch(e){error("Impossible de créer "+(isProject?"la réalisation":"la page")+" : "+e.message);}
   finally{if(trigger?.isConnected)trigger.disabled=false;}
 }
+async function movePageToTrash(id){
+  const target=page(id);
+  if(!target||target.is_trashed)return false;
+  // Ne jamais perdre silencieusement des modifications non enregistrées sur la page courante.
+  if(dirty){
+    error("Enregistrez d'abord les modifications de cette page avant de déplacer une réalisation dans la corbeille.");
+    return false;
+  }
+  const label=target.kind==="detail"?"la réalisation « "+target.draft.title+" »":"la page « "+target.draft.title+" »";
+  if(!confirm("Mettre "+label+" dans la corbeille ?\nVous pourrez la restaurer. Ses photographies sont conservées."))return false;
+  await api("trash",{id});
+  if(selected===id){
+    const parent=target.parent_id?page(target.parent_id):null;
+    selected=parent&&!parent.is_trashed?parent.id:"home";
+  }
+  await stateLoad();
+  notice(target.kind==="detail"?"Réalisation placée dans la corbeille. Elle n'apparaît plus sur le site.":"Page déplacée dans la corbeille.");
+  return true;
+}
 async function trashPage(){
-  if(!confirm("Déplacer cette page dans la corbeille ? Vous pourrez la restaurer."))return;
-  try{await api("trash",{id:selected});selected="home";await stateLoad();notice("Page déplacée dans la corbeille.");}
+  try{await movePageToTrash(selected);}
   catch(e){error(e.message);}
 }
 $("#login-form").addEventListener("submit",async e=>{

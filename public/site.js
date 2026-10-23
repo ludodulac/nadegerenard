@@ -2,7 +2,7 @@ const root=document.querySelector("#app"),brand=document.querySelector("#site-br
 const menu=document.querySelector("#site-menu"),menuButton=document.querySelector("#menu-button");
 let state={pages:[],footer:{},turnstileSiteKey:""};
 const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-const alignClass=value=>value==="left"?"align-left":"align-center";
+const alignClass=value=>value==="center"?"align-center":"align-left";
 const safeImage=s=>/^\/media\/[a-f0-9-]{36}\.(jpg|png|webp|avif)$/.test(String(s||""));
 const safeLink=s=>{try{const u=new URL(s);return u.protocol==="https:"?u.href:"";}catch{return "";}}
 function marked(s){return esc(s).replace(/\*\*(.+?)\*\*/gs,"<strong>$1</strong>").replace(/__(.+?)__/gs,"<u>$1</u>").replace(/\n/g,"<br>");}
@@ -58,9 +58,10 @@ function renderPage(p){
   const intro='<h1 class="page-title '+alignClass(d.titleAlign)+'">'+esc(d.title)+'</h1>'+(d.subtitle?'<p class="page-subtitle '+alignClass(d.subtitleAlign)+'">'+esc(d.subtitle)+'</p>':"");
   const back=p.kind==="detail"&&p.parent_id?state.pages.find(x=>x.id===p.parent_id):null;
   const blocks=Array.isArray(d.blocks)?d.blocks:[];
-  const other=blocks.filter(x=>x.type!=="press").map(blockHtml).filter(Boolean).map(s=>'<section class="content-block">'+s+'</section>').join("");
+  const other=blocks.filter(x=>x.type!=="press").map(b=>({b,html:blockHtml(b)})).filter(x=>x.html).map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
   const press=blocks.filter(x=>x.type==="press").map(blockHtml).join("");
-  root.innerHTML='<article class="page '+(home?"page-home":"")+'">'+(back?'<a class="project-back" data-link href="'+pathFor(back)+'">← '+esc(back.data.title)+'</a>':"")+intro+other+
+  const cover=p.kind==="detail"&&safeImage(d.cover)?'<figure class="cover-image">'+picture(d.cover,d.title)+'</figure>':"";
+  root.innerHTML='<article class="page '+(home?"page-home":"")+'">'+(back?'<a class="project-back" data-link href="'+pathFor(back)+'">← '+esc(back.data.title)+'</a>':"")+intro+cover+other+
     (p.kind==="gallery"?listGallery(p):"")+(p.kind==="press"?'<div class="press-list">'+press+'</div>':"")+
     (p.kind==="contact"?contactForm():"")+'</article>';
   document.title=esc(d.title)+" — Nadège Renard";
@@ -110,8 +111,12 @@ function updateMenu(){
 }
 function updateFooter(){
   const f=state.footer||{},social=[];
-  if(safeLink(f.linkedin))social.push('<a href="'+esc(f.linkedin)+'" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">LinkedIn ↗</a>');
-  if(safeLink(f.instagram))social.push('<a href="'+esc(f.instagram)+'" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram ↗</a>');
+  const icons={
+    linkedin:'<svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.35V9h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.603 0 4.267 2.37 4.267 5.455v6.286ZM5.337 7.433a2.062 2.062 0 1 1 .001-4.124 2.062 2.062 0 0 1-.001 4.124Zm1.782 13.019H3.555V9h3.564v11.452ZM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0Z"/></svg>',
+    instagram:'<svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="18" cy="6" r="1" fill="currentColor" stroke="none"/></svg>'
+  };
+  if(safeLink(f.linkedin))social.push('<a href="'+esc(f.linkedin)+'" target="_blank" rel="noopener noreferrer">'+icons.linkedin+'<span>LinkedIn</span></a>');
+  if(safeLink(f.instagram))social.push('<a href="'+esc(f.instagram)+'" target="_blank" rel="noopener noreferrer">'+icons.instagram+'<span>Instagram</span></a>');
   document.querySelector("#social-links").innerHTML=social.join("");
   document.querySelector("#copyright").textContent=f.copyright||"© Nadège Renard";
   document.querySelector("#legal-text").textContent=f.legal||"Mentions légales à compléter.";

@@ -165,3 +165,16 @@
   .floating-save-status{font-size:11px}
   .editor-body{padding-bottom:130px}
 }
+
+/* Œil de connexion : le mot de passe reste masqué par défaut. */
+.login-card .password-wrap{display:flex;position:relative;align-items:center;width:100%}
+.login-card .password-wrap input{width:100%;min-width:0;padding-right:50px}
+.login-card .password-eye{
+  display:grid;place-items:center;position:absolute;right:3px;top:50%;transform:translateY(-50%);
+  width:42px;height:42px;padding:6px;border:0;background:transparent;
+  color:#444;cursor:pointer;border-radius:3px;
+}
+.login-card .password-eye:hover{background:#f1f1f1}
+.login-card .password-eye:focus-visible{outline:2px solid #242424;outline-offset:1px}
+.login-card .password-eye svg{display:block}
+.login-card .password-eye #eye-slash[hidden]{display:none}

@@ -513,6 +513,17 @@ async function trashPage(){
   try{await movePageToTrash(selected);}
   catch(e){error(e.message);}
 }
+// L'œil ne change que l'affichage local du mot de passe (masqué par défaut).
+$("#toggle-password").addEventListener("click",()=>{
+  const input=$("#password"),button=$("#toggle-password"),slash=$("#eye-slash");
+  const visible=input.type==="password";
+  input.type=visible?"text":"password";
+  button.setAttribute("aria-pressed",String(visible));
+  const label=visible?"Masquer le mot de passe":"Afficher le mot de passe";
+  button.setAttribute("aria-label",label);
+  button.title=label;
+  slash.hidden=!visible;
+});
 $("#login-form").addEventListener("submit",async e=>{
   e.preventDefault();const f=e.target,button=f.querySelector("button");button.disabled=true;
   try{const input=f.elements.namedItem("password");await api("login",{password:input.value});input.value="";await stateLoad();}

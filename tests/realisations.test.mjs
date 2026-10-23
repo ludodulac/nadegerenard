@@ -68,6 +68,9 @@ test("l'ajout en galerie sans dialogue et les liens sociaux ne rendent que le co
   assert.ok(site.includes('if(safeLink(f.linkedin))social.push'));
   assert.ok(site.includes('if(safeLink(f.instagram))social.push'));
   assert.ok(site.includes('class="social-icon"'));
-  assert.ok(site.includes('const cover=p.kind==="detail"'));
+  assert.ok(!site.includes('const cover=p.kind==="detail"'));
+  assert.ok(site.includes('const body=p.kind==="detail"?description+detailText'));
+  assert.ok(site.includes('gallery-card'));
+  assert.ok(site.includes('gallery-caption'));
   assert.ok(styles.includes('.content-block.block-wrap-label{margin-bottom:14px}'));
 });

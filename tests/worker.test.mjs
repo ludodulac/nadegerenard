@@ -42,3 +42,14 @@ test("préserve les alignements gauche ou centré après sauvegarde",()=>{
   assert.equal(invalid.subtitleAlign,"left");
   assert.equal(invalid.blocks[0].align,"left");
 });
+
+test("les anciennes descriptions d'image deviennent des légendes visibles sans perdre les données",()=>{
+  const original={title:"Réalisation",blocks:[{
+    type:"image",src:"/media/11111111-1111-4111-8111-111111111111.jpg",alt:"C'est chouette"
+  }]};
+  const normalized=normalizePage(original);
+  assert.equal(normalized.blocks[0].alt,"C'est chouette");
+  assert.equal(normalized.blocks[0].caption,"C'est chouette");
+  const edited=normalizePage({...original,blocks:[{...original.blocks[0],caption:"Nouvelle légende"}]});
+  assert.equal(edited.blocks[0].caption,"Nouvelle légende");
+});

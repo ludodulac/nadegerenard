@@ -47,5 +47,5 @@ test("le site ne montre plus les faux libellés Photo d'accueil / Photographie �
   const site = readFileSync(new URL("../public/site.js", import.meta.url), "utf8");
   assert.ok(!site.includes("Photo d'accueil"));
   assert.ok(!site.includes("Photographie à venir"));
-  assert.ok(!site.includes("figcaption"));
+  assert.ok(site.includes('figcaption class="image-caption"'));
 });

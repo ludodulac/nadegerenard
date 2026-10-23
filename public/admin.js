@@ -74,9 +74,10 @@ function choosePhoto(path,current,label="Photographie"){
 function renderBlock(b,i){
   const textField=(label,key="text",rows=4)=>{
     const id="block-"+i+"-"+key;
+    const value=key==="caption"?(b.caption??b.alt??""):(b[key]||"");
     return '<div class="admin-field"><div class="field-heading"><label for="'+id+'">'+esc(label)+'</label>'+
       (b.type!=="image"?alignmentButtons(b.align,'data-align-block="'+i+'"',label):"")+'</div>'+
-      '<textarea id="'+id+'" data-block="'+i+'" data-bkey="'+key+'" rows="'+rows+'">'+esc(b[key]||"")+'</textarea></div>';
+      '<textarea id="'+id+'" data-block="'+i+'" data-bkey="'+key+'" rows="'+rows+'">'+esc(value)+'</textarea></div>';
   };
   let inner="";
   if(b.type==="text"){
@@ -85,7 +86,7 @@ function renderBlock(b,i){
       '<span class="field-tip">Sélectionnez des mots, puis cliquez sur une mise en forme.</span></div>'+
       textField("Paragraphe")+"<div class='admin-field'><label>Espacement entre les lignes</label><select data-block='"+i+"' data-bkey='lineHeight'>"+
       ["normal","large","extra"].map(v=>'<option value="'+v+'" '+((b.lineHeight||"normal")===v?"selected":"")+">"+({normal:"Normal",large:"Aéré",extra:"Très aéré"}[v])+"</option>").join("")+"</select></div>";
-  }else if(b.type==="image"){inner=choosePhoto("block:"+i,b.src)+textField("Description de l’image (accessibilité, non affichée sur le site)","alt",2);}
+  }else if(b.type==="image"){inner=choosePhoto("block:"+i,b.src)+textField("Texte affiché sous la photographie (facultatif)","caption",3);}
   else if(b.type==="press"){
     inner=textField("Titre au-dessus de la photographie","title",2)+choosePhoto("block:"+i,b.src)+textField("Adresse https:// de l’article","url",2);
   }else inner=textField(blockNames[b.type]);
@@ -104,8 +105,11 @@ function galleryProjects(){
         '<span class="gallery-caption" data-project-caption="'+esc(p.id)+'">'+esc(p.draft.title)+'</span></div>'+
       '<div class="admin-field"><label for="project-name-'+esc(p.id)+'">Nom affiché en blanc sur la photo</label>'+
         '<input id="project-name-'+esc(p.id)+'" data-project-title="'+esc(p.id)+'" maxlength="180" value="'+esc(p.draft.title)+'"></div>'+
-      '<div class="admin-field"><label for="project-photo-'+esc(p.id)+'">Photographie de cette réalisation</label>'+
-        '<input id="project-photo-'+esc(p.id)+'" type="file" accept="image/jpeg,image/png,image/webp,image/avif" data-project-upload="'+esc(p.id)+'"></div>'+
+      '<div class="admin-field"><label>Photographie de cette réalisation</label>'+
+        '<div class="project-photo-action"><button type="button" class="outline-button" data-project-photo-pick="'+esc(p.id)+'">'+
+          (imageOK(p.draft.cover)?"Remplacer la photographie":"Ajouter une photographie")+'</button>'+
+          '<span class="photo-upload-status" role="status">'+(imageOK(p.draft.cover)?"✓ Photographie déjà enregistrée":"Aucune photographie enregistrée")+'</span></div>'+
+        '<input id="project-photo-'+esc(p.id)+'" type="file" class="visually-hidden-file" accept="image/jpeg,image/png,image/webp,image/avif" aria-label="Choisir une photographie" data-project-upload="'+esc(p.id)+'"></div>'+
       '<div class="project-controls"><button type="button" class="outline-button" data-project-save="'+esc(p.id)+'">Enregistrer la photo et le titre</button>'+
         '<button type="button" class="black-button" data-project-edit="'+esc(p.id)+'">Modifier la page de cette réalisation →</button></div>'+
       '<p class="field-tip" data-project-status="'+esc(p.id)+'">'+(p.published?"Visible sur le site après sa dernière publication.":"Brouillon non publié.")+'</p></article>').join("")+
@@ -203,10 +207,15 @@ function bindProjectCards(){
     btn.disabled=true;
     try{
       const id=btn.dataset.projectEdit;
+      if(dirty)await save();
       await saveProject(id);
       select(id);
     }catch(e){error(e.message);}
     finally{if(btn.isConnected)btn.disabled=false;}
+  }));
+  document.querySelectorAll("[data-project-photo-pick]").forEach(button=>button.addEventListener("click",()=>{
+    const input=document.getElementById("project-photo-"+button.dataset.projectPhotoPick);
+    input?.click();
   }));
   document.querySelectorAll("[data-project-upload]").forEach(el=>el.addEventListener("change",async()=>{
     const id=el.dataset.projectUpload,p=page(id);
@@ -225,7 +234,7 @@ function bindProjectCards(){
 }
 function bindButtons(){
   $("#editing-panel").querySelectorAll("[data-add]").forEach(btn=>btn.addEventListener("click",()=>{
-    const type=btn.dataset.add;draft.blocks.push({type,text:"",title:"",src:"",url:"",alt:"",lineHeight:"normal",align:"left"});markDirty();showPage();
+    const type=btn.dataset.add;draft.blocks.push({type,text:"",title:"",src:"",url:"",alt:"",caption:"",lineHeight:"normal",align:"left"});markDirty();showPage();
   }));
   $("#editing-panel").querySelectorAll("[data-remove]").forEach(btn=>btn.addEventListener("click",()=>{draft.blocks.splice(Number(btn.dataset.remove),1);markDirty();showPage();}));
   $("#editing-panel").querySelectorAll("[data-up]").forEach(btn=>btn.addEventListener("click",()=>move(Number(btn.dataset.up),-1)));
@@ -248,7 +257,12 @@ function previewBlock(b){
   case "subtitle":return b.text?.trim()?'<h2 class="block-subtitle '+alignClass(b.align)+'">'+esc(b.text)+'</h2>':"";
   case "label":return b.text?.trim()?'<h2 class="block-label '+alignClass(b.align)+'">'+esc(b.text)+'</h2>':"";
   case "text":return b.text?.trim()?'<p class="block-text '+alignClass(b.align)+'">'+esc(b.text).replace(/\*\*(.+?)\*\*/gs,"<strong>$1</strong>").replace(/__(.+?)__/gs,"<u>$1</u>").replace(/\n/g,"<br>")+'</p>':"";
-  case "image":return imageOK(b.src)?'<img src="'+esc(b.src)+'" alt="'+esc(b.alt)+'">':"";
+  case "image":{
+    if(!imageOK(b.src))return "";
+    const caption=b.caption??b.alt??"";
+    return '<figure class="block-image"><img src="'+esc(b.src)+'" alt="'+esc(b.alt||caption)+'">'+
+      (caption.trim()?'<figcaption class="image-caption">'+esc(caption).replace(/\n/g,"<br>")+'</figcaption>':"")+'</figure>';
+  }
   case "press":return (b.title?.trim()?'<h3 class="press-card-title '+alignClass(b.align)+'">'+esc(b.title)+'</h3>':"")+(imageOK(b.src)?'<img src="'+esc(b.src)+'" alt="">':"");
   default:return "";
   }

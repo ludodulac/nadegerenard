@@ -59,3 +59,11 @@
 .project-editor-card .gallery-caption{color:#fff;text-shadow:0 1px 4px #000;background:linear-gradient(transparent,rgba(0,0,0,.65))}
 .project-editor-card .gallery-card.no-image .gallery-caption{color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65))}
 @media(max-width:600px){.project-controls button{width:100%}.project-card-preview img{height:245px}}
+
+/* Le navigateur réinitialise toujours son champ fichier : un état persisté est donc affiché à la place. */
+.project-photo-action{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.project-photo-action .outline-button{font-size:13px}
+.photo-upload-status{color:#505050;font-size:13px;line-height:1.4}
+.visually-hidden-file{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden!important;clip-path:inset(50%)!important;pointer-events:none!important}
+.preview-content .image-caption{font-size:16px;text-align:left}
+@media(max-width:600px){.project-photo-action{align-items:flex-start;flex-direction:column;gap:8px}}

@@ -225,3 +225,138 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
   .page-detail .page-subtitle { font-size: 19px; margin-bottom: 24px; }
   .page-detail .project-description { font-size: 16px; line-height: 1.65; margin-bottom: 27px; }
 }
+
+/*
+ * GALERIES CENTRÉES : 1 photo seule au centre, 2 réparties autour du centre,
+ * 3 sur toute la ligne ; 4 = 3 + 1 centrée, 5 = 3 + 2 centrées, etc.
+ * Flex-wrap avec justify-content:center centre chaque rangée indépendamment.
+ * Les titres de vignettes restent SUR la photo ; les © restent SOUS la photo.
+ */
+.gallery-list,
+.detail-photo-list,
+.page-photo-list,
+.press-list {
+  display:flex;
+  flex-flow:row wrap;
+  align-items:flex-start;
+  justify-content:center;
+  gap:24px;
+}
+.gallery-list > .gallery-card,
+.detail-photo-list > .content-block,
+.page-photo-list > .content-block,
+.press-list > .press-card {
+  box-sizing:border-box;
+  flex:0 0 calc((100% - 48px) / 3);
+  min-width:0;
+  max-width:calc((100% - 48px) / 3);
+}
+.detail-photo-list > .content-block,
+.page-photo-list > .content-block {margin:0}
+.page-photo-list {margin:22px 0 40px}
+.detail-photo-list {margin:28px 0 0}
+.gallery-list {margin:24px 0 34px}
+.press-list {margin:28px 0 0}
+
+/* Ne pas transformer une photographie verticale en image géante ou coupée. */
+.block-image,
+.page-photo-list .block-image,
+.detail-photo-list .block-image {
+  display:table;
+  width:fit-content;
+  max-width:100%;
+  margin:0 auto;
+}
+.block-image img,
+.page-photo-list img,
+.detail-photo-list img,
+.press-image img,
+.gallery-card img {
+  display:block;
+  width:auto;
+  max-width:100%;
+  height:auto;
+  max-height:min(66svh,540px);
+  object-fit:contain;
+}
+.page-photo-list .image-caption,
+.detail-photo-list .image-caption {overflow-wrap:anywhere}
+.gallery-card {
+  display:block;
+  min-height:0;
+  background:transparent;
+}
+.gallery-card .gallery-photo {
+  display:table;
+  width:fit-content;
+  max-width:100%;
+  margin-inline:auto;
+  position:relative;
+  background:transparent;
+  overflow:visible;
+}
+.gallery-card img {
+  width:100%;
+  height:auto;
+  max-height:none;
+  object-fit:contain;
+  transform:none;
+}
+.gallery-card:hover img {transform:none}
+.gallery-card .gallery-credit {
+  display:block;
+  text-align:left;
+  margin:2px auto 0;
+  width:100%;
+  max-width:100%;
+  padding:0;
+  position:static;
+  color:#777;
+  background:none;
+}
+.gallery-caption {
+  font-size:clamp(15px,1.6vw,22px);
+  padding:28px 10px 12px;
+}
+.page-photo-list .block-image .photo-credit,
+.detail-photo-list .block-image .photo-credit,
+.press-image .photo-credit {margin:2px 0 0;text-align:left}
+
+/* Hauteurs raisonnables et photos intégrales pour la rubrique Presse. */
+.press-image {display:table;width:fit-content;max-width:100%;margin-inline:auto}
+.press-image img {max-height:min(66svh,540px)}
+
+/* Deux colonnes sur tablette, une seule sur téléphone. */
+@media (min-width:601px) and (max-width:900px) {
+  .gallery-list,
+  .detail-photo-list,
+  .page-photo-list,
+  .press-list {gap:20px}
+  .gallery-list > .gallery-card,
+  .detail-photo-list > .content-block,
+  .page-photo-list > .content-block,
+  .press-list > .press-card {
+    flex-basis:calc((100% - 20px) / 2);
+    max-width:calc((100% - 20px) / 2);
+  }
+}
+@media (max-width:600px) {
+  .gallery-list,
+  .detail-photo-list,
+  .page-photo-list,
+  .press-list {gap:22px}
+  .gallery-list > .gallery-card,
+  .detail-photo-list > .content-block,
+  .page-photo-list > .content-block,
+  .press-list > .press-card {
+    flex-basis:100%;
+    max-width:100%;
+  }
+  .block-image img,
+  .page-photo-list img,
+  .detail-photo-list img,
+  .press-image img,
+  .gallery-card img {height:auto;max-height:none;object-fit:contain}
+  .gallery-card .gallery-photo {width:fit-content;max-width:100%}
+  .gallery-caption {font-size:clamp(16px,4vw,23px);padding:30px 12px 13px}
+}

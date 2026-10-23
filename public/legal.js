@@ -1,59 +1,53 @@
 // Textes modèles affichés immédiatement, même avant la saisie des informations.
 // Les valeurs inconnues sont signalées explicitement : aucune donnée légale inventée.
 export const LEGAL_FIELDS = [
-  {key:"editorName",label:"Nom ou dénomination de la personne qui édite le site",hint:"Nom complet légal, ex. Nadège Renard"},
-  {key:"status",label:"Statut professionnel",hint:"Ex. entrepreneur individuel (EI), microentrepreneur, association, société…"},
-  {key:"businessName",label:"Nom commercial (facultatif)"},
-  {key:"director",label:"Nom de la directrice de publication",hint:"Nom de la personne responsable du contenu"},
-  {key:"address",label:"Adresse professionnelle",hint:"Adresse à faire figurer dans les mentions légales"},
-  {key:"siren",label:"Numéro SIREN",hint:"9 chiffres, si applicable"},
-  {key:"registration",label:"Immatriculation RCS / RNE (si applicable)",hint:"Ex. RNE, RCS + ville"},
-  {key:"vat",label:"Numéro de TVA intracommunautaire (si applicable)"},
-  {key:"email",label:"Adresse e-mail professionnelle",type:"email"},
+  {key:"editorName",label:"Nom de l’éditrice et directrice de la publication",hint:"Nom légal, ex. Nadège Renard"},
+  {key:"status",label:"Statut professionnel",hint:"Ex. artiste-auteure, entrepreneure individuelle, société…"},
+  {key:"address",label:"Adresse professionnelle",hint:"Adresse à publier dans les mentions légales"},
+  {key:"siren",label:"SIREN",hint:"Numéro SIREN à 9 chiffres, si applicable"},
+  {key:"email",label:"E-mail professionnel",type:"email"},
   {key:"phone",label:"Téléphone professionnel",type:"tel"},
-  {key:"hostName",label:"Nom de l'hébergeur",hint:"La société qui héberge le site, ex. Cloudflare (nom juridique à vérifier)"},
-  {key:"hostAddress",label:"Adresse de l'hébergeur",hint:"Adresse officielle de l'hébergeur"},
-  {key:"hostPhone",label:"Téléphone de l'hébergeur",hint:"Téléphone officiel de l'hébergeur"},
-  {key:"retention",label:"Durée de conservation des messages",hint:"Durée réellement appliquée, ex. 12 mois"}
+  {key:"hostName",label:"Nom de l’hébergeur",hint:"Nom juridique de la société qui héberge le site"},
+  {key:"hostAddress",label:"Adresse de l’hébergeur"},
+  {key:"hostPhone",label:"Téléphone de l’hébergeur",type:"tel"},
+  {key:"retention",label:"Durée de conservation des messages",hint:"Utilisée dans le texte « Confidentialité »"}
 ];
 export const LEGAL_KEYS = LEGAL_FIELDS.map(x=>x.key);
 const value=(d,key,label)=>String(d?.[key]??"").trim()||"[À COMPLÉTER : "+label+"]";
 const opt=(d,key,prefix)=>String(d?.[key]??"").trim()?prefix+String(d[key]).trim():null;
 export const hasStructuredLegal=f=>LEGAL_KEYS.some(key=>String(f?.legalDetails?.[key]??"").trim());
 
+// Texte validé pour l'affichage public : les trous sont conservés tant qu'ils ne sont pas remplis.
 export function legalDocument(f={}){
   const d=f.legalDetails||{};
+  const hole=(key,label)=>String(d[key]??"").trim()||"["+label+"]";
   const lines=[
-    "PRÉSENTATION DU SITE",
-    "Le site Nadège Renard a pour objet de présenter des travaux artistiques, des scénographies, des décors, des patines, des ateliers et des réalisations. Il permet également aux visiteurs de prendre contact avec la professionnelle au moyen d'un formulaire. Aucune vente n'est réalisée directement sur ce site.",
+    "Le site",
+    "Ce site présente les travaux de Nadège Renard : scénographies, décors, patines, ateliers. Aucune vente n'est réalisée directement sur le site.",
     "",
-    "ÉDITION DU SITE",
-    "Ce site est édité par "+value(d,"editorName","nom ou dénomination de l'éditrice")+".",
-    "Statut professionnel : "+value(d,"status","statut professionnel"),
-    opt(d,"businessName","Nom commercial : "),
-    "Adresse professionnelle : "+value(d,"address","adresse professionnelle"),
-    "Numéro SIREN : "+value(d,"siren","numéro SIREN (si applicable)"),
-    opt(d,"registration","Immatriculation : "),
-    opt(d,"vat","Numéro de TVA intracommunautaire : "),
-    "Adresse électronique : "+value(d,"email","adresse e-mail"),
-    "Téléphone : "+value(d,"phone","téléphone professionnel"),
-    "Directrice de la publication : "+value(d,"director","nom de la directrice de publication"),
+    "Éditrice et directrice de la publication",
+    hole("editorName","NOM"),
+    hole("status","STATUT PROFESSIONNEL"),
+    hole("address","ADRESSE PROFESSIONNELLE"),
+    "SIREN : "+hole("siren","SIREN"),
+    "E-mail : "+hole("email","E-MAIL"),
+    "Téléphone : "+hole("phone","TÉLÉPHONE"),
     "",
-    "HÉBERGEMENT DU SITE",
-    "Le site est hébergé par "+value(d,"hostName","nom de l'hébergeur")+".",
-    "Adresse de l'hébergeur : "+value(d,"hostAddress","adresse de l'hébergeur"),
-    "Téléphone de l'hébergeur : "+value(d,"hostPhone","téléphone de l'hébergeur"),
+    "Hébergeur",
+    hole("hostName","NOM DE L'HÉBERGEUR"),
+    hole("hostAddress","ADRESSE DE L'HÉBERGEUR"),
+    "Téléphone : "+hole("hostPhone","TÉLÉPHONE DE L'HÉBERGEUR"),
     "",
-    "PROPRIÉTÉ INTELLECTUELLE ET CRÉDITS PHOTOGRAPHIQUES",
-    "Les scénographies, décors, textes, illustrations et photographies présentés sur ce site sont susceptibles d'être protégés par le droit d'auteur. Toute reproduction, représentation, modification ou réutilisation requiert l'accord préalable des titulaires des droits, sauf exception prévue par la loi.",
-    "Lorsqu'un crédit photographique est indiqué sous ou sur une image (par exemple : © Nom de l'auteur), il identifie le photographe concerné. La présence d'un crédit ne vaut pas autorisation de réutiliser la photographie.",
+    "Propriété intellectuelle",
+    "Les textes, images, photographies, décors et scénographies présentés sur ce site sont protégés par le droit d'auteur. Toute reproduction ou réutilisation nécessite l'accord préalable de leurs titulaires. Les crédits photographiques identifient l'auteur de l'image et ne valent pas autorisation de réutilisation.",
     "",
-    "DONNÉES PERSONNELLES",
-    "Pour savoir comment sont utilisées les informations envoyées avec le formulaire de contact, consultez la rubrique « Confidentialité » accessible dans le pied de page."
-  ].filter(x=>x!==null);
+    "Données personnelles",
+    "Les informations envoyées par le formulaire de contact sont traitées conformément à la rubrique « Confidentialité », accessible en pied de page."
+  ];
+  // Conserver d'éventuelles précisions antérieures sans les effacer silencieusement.
   const extra=String(f.legal||"").trim();
-  if(extra)lines.push("","PRÉCISIONS COMPLÉMENTAIRES",extra);
-  return lines.join("\n");
+  if(extra)lines.push("","Précisions complémentaires",extra);
+  return lines.join("\\n");
 }
 
 export function privacyDocument(f={}){

@@ -16,12 +16,12 @@ function normalizePage(value) {
   const blocks=value.blocks.map(item=>{
     if (!item || !ALLOWED_BLOCKS.has(item.type)) throw Error("Type de bloc inconnu");
     return {
-      type:item.type, text:cleanText(item.text,15000), title:cleanText(item.title,400),
+      type:item.type, align:item.align==="left"?"left":"center", text:cleanText(item.text,15000), title:cleanText(item.title,400),
       src:cleanText(item.src,400), alt:cleanText(item.alt,250),
       url:cleanText(item.url,800), lineHeight:["normal","large","extra"].includes(item.lineHeight)?item.lineHeight:"normal"
     };
   });
-  const raw={title:cleanText(value.title,180),subtitle:cleanText(value.subtitle,600),cover:cleanText(value.cover,400),blocks};
+  const raw={title:cleanText(value.title,180),subtitle:cleanText(value.subtitle,600),titleAlign:value.titleAlign==="left"?"left":"center",subtitleAlign:value.subtitleAlign==="left"?"left":"center",cover:cleanText(value.cover,400),blocks};
   if(!raw.title) throw Error("Le titre ne peut pas être vide");
   if(JSON.stringify(raw).length>100000) throw Error("Contenu trop volumineux");
   for(const b of blocks) {

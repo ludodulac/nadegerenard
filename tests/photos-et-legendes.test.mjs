@@ -9,6 +9,8 @@ test("la galerie montre un statut enregistré à la place de Aucun fichier chois
   assert.ok(admin.includes('Remplacer la photographie'));
   assert.ok(admin.includes('class="visually-hidden-file"'));
   assert.ok(admin.includes('data-project-photo-pick'));
+  assert.ok(admin.includes('data-pick-photo'));
+  assert.ok(admin.includes('Photographie déjà enregistrée'));
   assert.ok(admin.includes('input?.click()'));
 });
 test("ouvrir une fiche depuis une galerie sauvegarde les modifications avant la navigation",()=>{

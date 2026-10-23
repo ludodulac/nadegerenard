@@ -126,6 +126,15 @@ function updateMenu(){
   const entries=state.pages.filter(x=>x.kind!=="detail"&&x.parent_id===null).sort((a,b)=>a.nav_order-b.nav_order);
   document.querySelector("#menu-links").innerHTML=entries.map(p=>'<a href="'+pathFor(p)+'" data-link>'+esc(p.kind==="home"?"ACCUEIL":p.data.title)+'</a>').join("");
 }
+function legalMarkup(text){
+  const headings=new Set(["Le site","Éditrice et directrice de la publication","Hébergeur","Propriété intellectuelle","Données personnelles","Précisions complémentaires"]);
+  return String(text||"").split("\n\n").map(section=>{
+    const [first,...rest]=section.split("\n");
+    if(!headings.has(first))return '<p>'+esc(section).replace(/\n/g,"<br>")+'</p>';
+    return '<section class="legal-section"><h3>'+esc(first)+'</h3>'+
+      (rest.length?'<p>'+esc(rest.join("\n")).replace(/\n/g,"<br>")+'</p>':"")+'</section>';
+  }).join("");
+}
 function updateFooter(){
   const f=state.footer||{},social=[];
   const icons={
@@ -136,7 +145,7 @@ function updateFooter(){
   if(safeLink(f.instagram))social.push('<a href="'+esc(f.instagram)+'" target="_blank" rel="noopener noreferrer">'+icons.instagram+'<span>Instagram</span></a>');
   document.querySelector("#social-links").innerHTML=social.join("");
   document.querySelector("#copyright").textContent=f.copyright||"© Nadège Renard";
-  document.querySelector("#legal-text").textContent=legalDocument(f);
+  document.querySelector("#legal-text").innerHTML=legalMarkup(legalDocument(f));
   document.querySelector("#privacy-text").textContent=privacyDocument(f);
 }
 const dialog=document.querySelector("#legal-dialog");

@@ -393,3 +393,57 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
     line-height:1.25;
   }
 }
+
+/* Ajustements demandés : titres de presse lisibles et en gras sur ordinateur. */
+@media (min-width:861px){
+  .press-card-title{
+    font-size:16px;
+    font-weight:700;
+    line-height:1.35;
+    margin:0 0 9px;
+    letter-spacing:0;
+  }
+  /* Le formulaire Contact tient dans une fenêtre d'ordinateur sans champs énormes. */
+  .page-contact{padding-top:12px;padding-bottom:44px}
+  .page-contact .page-title{
+    font-size:clamp(31px,3vw,42px);
+    line-height:1.1;
+    margin:4px 0 15px;
+  }
+  .page-contact .page-subtitle{
+    font-size:17px;
+    line-height:1.35;
+    margin:0 0 12px;
+  }
+  .page-contact .contact-form{
+    width:100%;
+    max-width:525px;
+    margin:8px 0 22px;
+    gap:11px;
+  }
+  .page-contact .field label{
+    font-size:14px;
+    line-height:1.25;
+    margin-bottom:3px;
+  }
+  .page-contact .field input{
+    height:36px;
+    min-height:36px;
+    padding:6px 10px;
+    font-size:15px;
+    line-height:1.25;
+  }
+  .page-contact .field textarea{
+    min-height:92px;
+    height:98px;
+    padding:8px 10px;
+    font-size:15px;
+    line-height:1.35;
+  }
+  .page-contact .submit{
+    min-width:112px;
+    padding:9px 19px;
+    font-size:15px;
+  }
+  .page-contact .form-message{min-height:18px;font-size:13px}
+}

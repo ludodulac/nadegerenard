@@ -47,7 +47,7 @@ export function legalDocument(f={}){
   // Conserver d'éventuelles précisions antérieures sans les effacer silencieusement.
   const extra=String(f.legal||"").trim();
   if(extra)lines.push("","Précisions complémentaires",extra);
-  return lines.join("\\n");
+  return lines.join("\n");
 }
 
 export function privacyDocument(f={}){

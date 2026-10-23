@@ -19,3 +19,24 @@ test("les réseaux sociaux requièrent HTTPS",()=>{
   assert.throws(()=>normalizeFooter({instagram:"http://example.com"}));
   assert.equal(normalizeFooter({instagram:"https://instagram.com/exemple"}).linkedin,"");
 });
+
+test("préserve les alignements gauche ou centré après sauvegarde",()=>{
+  const d=normalizePage({
+    title:"BIO", subtitle:"Scénographe", titleAlign:"left", subtitleAlign:"center",
+    blocks:[
+      {type:"heading",text:"À gauche",align:"left"},
+      {type:"text",text:"Au centre",align:"center"},
+      {type:"label",text:"Alignement ancien absent"}
+    ]
+  });
+  assert.equal(d.titleAlign,"left");
+  assert.equal(d.subtitleAlign,"center");
+  assert.equal(d.blocks[0].align,"left");
+  assert.equal(d.blocks[1].align,"center");
+  assert.equal(d.blocks[2].align,"center");
+
+  const invalid=normalizePage({title:"Test",titleAlign:"right",subtitleAlign:"justify",blocks:[{type:"text",text:"Bonjour",align:"right"}]});
+  assert.equal(invalid.titleAlign,"center");
+  assert.equal(invalid.subtitleAlign,"center");
+  assert.equal(invalid.blocks[0].align,"center");
+});

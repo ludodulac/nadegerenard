@@ -18,11 +18,11 @@ function normalizePage(value) {
     return {
       type:item.type, align:item.align==="center"?"center":"left", text:cleanText(item.text,15000), title:cleanText(item.title,400),
       src:cleanText(item.src,400), alt:cleanText(item.alt,250),
-      caption:cleanText(item.caption===undefined?item.alt:item.caption,4000),
+      caption:cleanText(item.caption===undefined?item.alt:item.caption,4000), credit:cleanText(item.credit,200).replace(/^©\s*/u,""),
       url:cleanText(item.url,800), lineHeight:["normal","large","extra"].includes(item.lineHeight)?item.lineHeight:"normal"
     };
   });
-  const raw={title:cleanText(value.title,180),subtitle:cleanText(value.subtitle,600),description:cleanText(value.description,15000),titleAlign:value.titleAlign==="center"?"center":"left",subtitleAlign:value.subtitleAlign==="center"?"center":"left",descriptionAlign:value.descriptionAlign==="center"?"center":"left",cover:cleanText(value.cover,400),blocks};
+  const raw={title:cleanText(value.title,180),subtitle:cleanText(value.subtitle,600),description:cleanText(value.description,15000),titleAlign:value.titleAlign==="center"?"center":"left",subtitleAlign:value.subtitleAlign==="center"?"center":"left",descriptionAlign:value.descriptionAlign==="center"?"center":"left",cover:cleanText(value.cover,400),coverCredit:cleanText(value.coverCredit,200).replace(/^©\s*/u,""),blocks};
   if(!raw.title) throw Error("Le titre ne peut pas être vide");
   if(JSON.stringify(raw).length>100000) throw Error("Contenu trop volumineux");
   for(const b of blocks) {
@@ -36,7 +36,10 @@ function isSafeImage(url) {return /^\/media\/[a-f0-9-]{36}\.(?:jpg|png|webp|avif
 function isSafeExternal(url) {try {const u=new URL(url);return u.protocol==="https:" && !!u.hostname;}catch{return false;}}
 function normalizeFooter(v){
   if(!v || typeof v!=="object") throw Error("Pied de page invalide");
-  const x={instagram:cleanText(v.instagram,500),linkedin:cleanText(v.linkedin,500),legal:cleanText(v.legal,12000),copyright:cleanText(v.copyright,150)};
+  const fields=["editorName","status","businessName","director","address","siren","registration","vat","email","phone","hostName","hostAddress","hostPhone","retention"];
+  const legalDetails={};
+  for(const key of fields) legalDetails[key]=cleanText(v.legalDetails?.[key],key==="address"||key==="hostAddress"?500:250);
+  const x={instagram:cleanText(v.instagram,500),linkedin:cleanText(v.linkedin,500),legal:cleanText(v.legal,12000),copyright:cleanText(v.copyright,150),legalDetails};
   if((x.instagram&&!isSafeExternal(x.instagram))||(x.linkedin&&!isSafeExternal(x.linkedin))) throw Error("Lien de réseau social invalide");
   return x;
 }

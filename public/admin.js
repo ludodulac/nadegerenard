@@ -286,9 +286,11 @@ function previewBlock(b){
     if(!imageOK(b.src))return "";
     const caption=b.caption??b.alt??"";
     return '<figure class="block-image"><img src="'+esc(b.src)+'" alt="'+esc(b.alt||caption)+'">'+
-      (caption.trim()?'<figcaption class="image-caption">'+esc(caption).replace(/\n/g,"<br>")+'</figcaption>':"")+'</figure>';
+      (caption.trim()?'<figcaption class="image-caption">'+esc(caption).replace(/\n/g,"<br>")+'</figcaption>':"")+
+      (copyrightText(b.credit)?'<p class="photo-credit">'+esc(copyrightText(b.credit))+'</p>':"")+'</figure>';
   }
-  case "press":return (b.title?.trim()?'<h3 class="press-card-title '+alignClass(b.align)+'">'+esc(b.title)+'</h3>':"")+(imageOK(b.src)?'<img src="'+esc(b.src)+'" alt="">':"");
+  case "press":return (b.title?.trim()?'<h3 class="press-card-title '+alignClass(b.align)+'">'+esc(b.title)+'</h3>':"")+
+      (imageOK(b.src)?'<figure><img src="'+esc(b.src)+'" alt="">'+(copyrightText(b.credit)?'<figcaption class="photo-credit">'+esc(copyrightText(b.credit))+'</figcaption>':"")+'</figure>':"");
   default:return "";
   }
 }
@@ -297,12 +299,14 @@ function drawPreview(){
   const target=$("#preview-content");if(!target)return;
   if(selected==="footer"){target.innerHTML='<div style="background:#111;color:white;padding:25px">'+
       '<p>CONTACT</p><p>'+esc(draft.instagram)+'</p><p>'+esc(draft.linkedin)+'</p>'+
-      '<p>'+esc(draft.copyright)+'</p><h3>MENTIONS LÉGALES</h3><p style="white-space:pre-wrap">'+esc(draft.legal)+'</p></div>';return;}
+      '<p>'+esc(draft.copyright)+'</p><h3>MENTIONS LÉGALES</h3><p style="white-space:pre-wrap">'+esc(legalDocument(draft,true))+'</p>'+
+      '<h3>CONFIDENTIALITÉ</h3><p style="white-space:pre-wrap">'+esc(privacyDocument(draft))+'</p></div>';return;}
   if(!draft)return;
   const p=page(selected);
   const gallery=p?.kind==="gallery"?'<div class="gallery-list">'+
     allVisible().filter(x=>x.kind==="detail"&&x.parent_id===p.id&&imageOK(x.draft.cover)).map(x=>
-      '<div class="gallery-card"><img src="'+esc(x.draft.cover)+'" alt=""><span class="gallery-caption">'+esc(x.draft.title)+'</span></div>').join("")+'</div>':"";
+      '<div class="gallery-card"><img src="'+esc(x.draft.cover)+'" alt=""><span class="gallery-caption">'+esc(x.draft.title)+'</span>'+
+        (copyrightText(x.draft.coverCredit)?'<span class="gallery-credit">'+esc(copyrightText(x.draft.coverCredit))+'</span>':"")+'</div>').join("")+'</div>':"";
   const previewItems=draft.blocks.map(b=>({b,html:previewBlock(b)})).filter(x=>x.html);
   const detailText=previewItems.filter(x=>x.b.type!=="image").map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
   const images=previewItems.filter(x=>x.b.type==="image").map(x=>'<section class="content-block block-wrap-image">'+x.html+'</section>').join("");
@@ -319,7 +323,16 @@ function showFooter(){
     renderField("Lien Instagram (https://…)","instagram",draft.instagram)+
     renderField("Lien LinkedIn (https://…)","linkedin",draft.linkedin)+
     renderField("Texte de copyright","copyright",draft.copyright)+
-    renderField("Mentions légales, droits des photographies et informations du site","legal",draft.legal,{multiline:true,rows:14})+'</section>';
+    '</section><section class="form-card"><h3>Mentions légales — champs à remplir</h3>'+
+    '<p class="field-tip">Le texte juridique est préparé automatiquement. Renseignez les informations exactes, puis vérifiez l’aperçu avant publication. Les éléments manquants sont marqués [À compléter].</p>'+
+    LEGAL_FIELDS.map(field=>{
+      const key=field.key,value=draft.legalDetails?.[key]||"";
+      return '<div class="admin-field"><label for="legal-'+key+'">'+esc(field.label)+'</label>'+
+        '<input id="legal-'+key+'" data-legal-key="'+key+'" type="'+(field.type||"text")+'" value="'+esc(value)+'" placeholder="'+esc(field.hint||"")+'">'+
+        (field.hint?'<span class="field-tip">'+esc(field.hint)+'</span>':"")+'</div>';
+    }).join("")+
+    renderField("Précisions complémentaires (facultatif)","legal",draft.legal,{multiline:true,rows:4,hint:"Le texte existant reste conservé et sera ajouté à la fin des mentions générées."})+
+    '<h3>Confidentialité</h3><p class="field-tip">Le texte sur la protection des données du formulaire de contact est également généré automatiquement.</p></section>';
   bindContentFields();drawPreview();notice("Les mentions légales doivent être vérifiées et complétées avant publication.");
 }
 function showTrash(){

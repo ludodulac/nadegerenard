@@ -95,7 +95,7 @@ function renderPage(p){
   const description=p.kind==="detail"&&d.description?.trim()?'<div class="project-description '+alignClass(d.descriptionAlign)+'">'+marked(d.description)+'</div>':"";
   const body=p.kind==="detail"?description+detailText+'<div class="detail-photo-list">'+detailImages+'</div>':other;
   const press=blocks.filter(x=>x.type==="press").map(blockHtml).join("");
-  root.innerHTML='<article class="page '+(home?"page-home":"")+(p.kind==="detail"?" page-detail":"")+'">'+(back?'<a class="project-back" data-link href="'+pathFor(back)+'">← '+esc(back.data.title)+'</a>':"")+intro+body+
+  root.innerHTML='<article class="page '+(home?"page-home":"")+(p.kind==="detail"?" page-detail":"")+(p.kind==="contact"?" page-contact":"")+'">'+(back?'<a class="project-back" data-link href="'+pathFor(back)+'">← '+esc(back.data.title)+'</a>':"")+intro+body+
     (p.kind==="gallery"?listGallery(p):"")+(p.kind==="press"?'<div class="press-list">'+press+'</div>':"")+
     (p.kind==="contact"?contactForm():"")+'</article>';
   document.title=esc(d.title)+" — Nadège Renard";

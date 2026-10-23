@@ -1,0 +1,129 @@
+{
+  "pages": [
+    {
+      "id": "home",
+      "slug": "accueil",
+      "kind": "home",
+      "parent_id": null,
+      "nav_order": 0,
+      "data": {
+        "title": "NADÈGE RENARD",
+        "subtitle": "scénographe/peintre",
+        "cover": "",
+        "blocks": [
+          {
+            "type": "image",
+            "src": "",
+            "alt": "Photo d'accueil"
+          },
+          {
+            "type": "label",
+            "text": "MA VISION"
+          },
+          {
+            "type": "text",
+            "text": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "bio",
+      "slug": "bio",
+      "kind": "page",
+      "parent_id": null,
+      "nav_order": 1,
+      "data": {
+        "title": "BIO",
+        "subtitle": "",
+        "cover": "",
+        "blocks": []
+      }
+    },
+    {
+      "id": "sceno",
+      "slug": "scenographie-spectacle",
+      "kind": "gallery",
+      "parent_id": null,
+      "nav_order": 2,
+      "data": {
+        "title": "SCÉNOGRAPHIE SPECTACLE",
+        "subtitle": "",
+        "cover": "",
+        "blocks": []
+      }
+    },
+    {
+      "id": "transmission",
+      "slug": "transmission-workshop",
+      "kind": "gallery",
+      "parent_id": null,
+      "nav_order": 3,
+      "data": {
+        "title": "TRANSMISSION WORKSHOP",
+        "subtitle": "",
+        "cover": "",
+        "blocks": []
+      }
+    },
+    {
+      "id": "patines",
+      "slug": "patines-et-couleurs",
+      "kind": "gallery",
+      "parent_id": null,
+      "nav_order": 4,
+      "data": {
+        "title": "PATINES ET COULEURS",
+        "subtitle": "",
+        "cover": "",
+        "blocks": []
+      }
+    },
+    {
+      "id": "manipulation",
+      "slug": "manipulation-spectacle",
+      "kind": "gallery",
+      "parent_id": null,
+      "nav_order": 5,
+      "data": {
+        "title": "MANIPULATION SPECTACLE",
+        "subtitle": "",
+        "cover": "",
+        "blocks": []
+      }
+    },
+    {
+      "id": "presse",
+      "slug": "presse",
+      "kind": "press",
+      "parent_id": null,
+      "nav_order": 6,
+      "data": {
+        "title": "PRESSE",
+        "subtitle": "",
+        "cover": "",
+        "blocks": []
+      }
+    },
+    {
+      "id": "contact",
+      "slug": "contact",
+      "kind": "contact",
+      "parent_id": null,
+      "nav_order": 7,
+      "data": {
+        "title": "CONTACT",
+        "subtitle": "",
+        "cover": "",
+        "blocks": []
+      }
+    }
+  ],
+  "footer": {
+    "instagram": "",
+    "linkedin": "",
+    "legal": "",
+    "copyright": "© Nadège Renard"
+  },
+  "turnstileSiteKey": ""
+}

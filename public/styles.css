@@ -73,3 +73,12 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
 .detail-photo-list img{width:100%;height:auto;object-fit:contain;max-height:none}
 .project-back{display:inline-flex;align-items:center;gap:5px}
 @media(max-width:600px){.page-detail .page-title{font-size:clamp(34px,8vw,60px);margin-bottom:35px}.page-detail .page-subtitle{margin-bottom:42px}.detail-photo-list{gap:20px}}
+
+/* Crédits photographiques facultatifs : sous les photos, sur la vignette pour les galeries. */
+.photo-credit{font-size:12px;line-height:1.5;color:#777;margin:7px 0 0;text-align:right;letter-spacing:.01em}
+.press-image .photo-credit{margin:8px 0 0}
+.gallery-credit{position:absolute;top:12px;right:12px;max-width:calc(100% - 24px);padding:5px 9px;background:rgba(0,0,0,.54);color:#fff;font-size:11px;line-height:1.4;text-align:right;overflow-wrap:anywhere}
+.gallery-credit[hidden]{display:none}
+.legal-text{white-space:pre-wrap;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+.inline-privacy{background:none;border:0;padding:0;color:inherit;text-decoration:underline;text-underline-offset:2px;font-size:inherit;cursor:pointer}
+.inline-privacy:hover{color:#111}

@@ -31,38 +31,51 @@ test("le symbole copyright ne s'affiche que si un nom est renseigné",()=>{
   assert.match(admin,/data-bkey="credit"/);
   assert.match(admin,/data-project-credit/);
 });
-test("les champs des mentions légales survivent à la sauvegarde et filtrent les champs inconnus",()=>{
-  const f=normalizeFooter({instagram:"",legal:"Complément",legalDetails:{
-    editorName:"Nadège Renard",status:"EI",siren:"123456789",
-    hostName:"Hébergeur",email:"contact@example.org",inconnu:"injection"
-  }});
-  assert.equal(f.legalDetails.siren,"123456789");
-  assert.equal(f.legalDetails.inconnu,undefined);
-  assert.match(legalDocument(f),/Numéro SIREN : 123456789/);
-  assert.match(legalDocument(f),/PRÉCISIONS COMPLÉMENTAIRES\nComplément/);
-  assert.match(privacyDocument(f),/contact@example\.org/);
-  assert.match(legalDocument(f),/\[À COMPLÉTER :/);
+test("les mentions légales reprennent exactement le modèle court à trous",()=>{
+  const text=legalDocument({});
+  assert.equal(text,[
+    "Le site",
+    "Ce site présente les travaux de Nadège Renard : scénographies, décors, patines, ateliers. Aucune vente n'est réalisée directement sur le site.",
+    "",
+    "Éditrice et directrice de la publication",
+    "[NOM]",
+    "[STATUT PROFESSIONNEL]",
+    "[ADRESSE PROFESSIONNELLE]",
+    "SIREN : [SIREN]",
+    "E-mail : [E-MAIL]",
+    "Téléphone : [TÉLÉPHONE]",
+    "",
+    "Hébergeur",
+    "[NOM DE L'HÉBERGEUR]",
+    "[ADRESSE DE L'HÉBERGEUR]",
+    "Téléphone : [TÉLÉPHONE DE L'HÉBERGEUR]",
+    "",
+    "Propriété intellectuelle",
+    "Les textes, images, photographies, décors et scénographies présentés sur ce site sont protégés par le droit d'auteur. Toute reproduction ou réutilisation nécessite l'accord préalable de leurs titulaires. Les crédits photographiques identifient l'auteur de l'image et ne valent pas autorisation de réutilisation.",
+    "",
+    "Données personnelles",
+    "Les informations envoyées par le formulaire de contact sont traitées conformément à la rubrique « Confidentialité », accessible en pied de page."
+  ].join("\n"));
+  assert.match(site,/legalMarkup\(legalDocument\(f\)\)/);
+  assert.match(html,/id="legal-button"/);
+  assert.match(html,/MENTIONS LÉGALES/);
 });
-test("les DEUX textes sont complets avant toute saisie et comportent des trous explicites",()=>{
-  const mentions=legalDocument({});
-  const confidentialite=privacyDocument({});
-  assert.match(mentions,/PRÉSENTATION DU SITE/);
-  assert.match(mentions,/PROPRIÉTÉ INTELLECTUELLE ET CRÉDITS PHOTOGRAPHIQUES/);
-  assert.match(mentions,/HÉBERGEMENT DU SITE/);
-  assert.match(mentions,/\[À COMPLÉTER : adresse professionnelle\]/);
-  assert.match(confidentialite,/POLITIQUE DE CONFIDENTIALITÉ/);
-  assert.match(confidentialite,/DURÉE DE CONSERVATION/);
-  assert.match(confidentialite,/\[À COMPLÉTER : durée de conservation réellement appliquée\]/);
-  assert.ok(mentions.length>1000);
-  assert.ok(confidentialite.length>1000);
+test("les champs complètent le texte choisi et sont conservés",()=>{
+  const details={editorName:"Nadège Renard",status:"Artiste-auteure",address:"1 rue des Fleurs",siren:"123456789",email:"nad@example.fr",phone:"02 11 11 11 11",hostName:"Hébergement exemple",hostAddress:"Paris",hostPhone:"02 22 22 22 22",retention:"12 mois"};
+  const footer=normalizeFooter({legalDetails:details});
+  for(const [key,val] of Object.entries(details)) assert.equal(footer.legalDetails[key],val);
+  const legal=legalDocument(footer);
+  assert.match(legal,/Éditrice et directrice de la publication\nNadège Renard/);
+  assert.match(legal,/SIREN : 123456789/);
+  assert.match(legal,/Téléphone : 02 22 22 22 22/);
+  assert.doesNotMatch(legal,/\[NOM\]/);
+  assert.match(privacyDocument(footer),/12 mois/);
 });
-test("les anciens textes ne disparaissent pas et les champs complètent les deux documents",()=>{
-  assert.match(legalDocument({legal:"Texte existant"}),/PRÉCISIONS COMPLÉMENTAIRES\nTexte existant/);
-  assert.match(legalDocument(normalizeFooter({legal:"Texte existant"})),/PRÉSENTATION DU SITE/);
-  const f=normalizeFooter({legalDetails:{editorName:"Nadège Renard",email:"nadege@example.org"}});
-  assert.match(legalDocument(f),/édité par Nadège Renard/);
-  assert.match(privacyDocument(f),/nadege@example\.org/);
-  assert.match(legalDocument(f),/\[À COMPLÉTER : statut professionnel\]/);
+test("l'ancien contenu juridique n'est pas effacé et le modèle ne dépend pas de la saisie",()=>{
+  assert.match(legalDocument({legal:"Anciennes informations"}),/Précisions complémentaires\nAnciennes informations/);
+  assert.match(legalDocument(normalizeFooter({legal:"Texte existant"})),/Le site\nCe site présente/);
+  assert.match(legalDocument({legalDetails:{status:""}}),/\[STATUT PROFESSIONNEL\]/);
+  assert.match(privacyDocument({}),/POLITIQUE DE CONFIDENTIALITÉ/);
   assert.match(html,/id="privacy-button"/);
   assert.match(html,/id="privacy-text"/);
   assert.match(site,/data-open-privacy/);

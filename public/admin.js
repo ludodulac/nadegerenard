@@ -24,12 +24,13 @@ async function stateLoad(){
 function allVisible(){return db.pages.filter(p=>!p.is_trashed);}
 function page(id){return db.pages.find(p=>p.id===id);}
 function drawSidebar(){
-  const items=allVisible().filter(p=>p.kind!=="detail").sort((a,b)=>a.nav_order-b.nav_order);
-  $("#page-list").innerHTML=items.map(p=>{
-    const children=allVisible().filter(x=>x.parent_id===p.id).sort((a,b)=>a.nav_order-b.nav_order);
-    return '<button class="admin-page" data-select="'+esc(p.id)+'">'+esc(p.draft.title)+'</button>'+
-      children.map(x=>'<button class="admin-page child" data-select="'+esc(x.id)+'">↳ '+esc(x.draft.title)+'</button>').join("");
-  }).join("");
+  const visible=allVisible();
+  const primary=visible.filter(p=>p.kind!=="detail").sort((a,b)=>a.nav_order-b.nav_order);
+  const projects=visible.filter(p=>p.kind==="detail").sort((a,b)=>a.nav_order-b.nav_order);
+  const button=p=>'<button class="admin-page" data-select="'+esc(p.id)+'">'+esc(p.draft.title)+'</button>';
+  $("#page-list").innerHTML=primary.map(button).join("")+
+    (projects.length?'<div class="sidebar-divider" role="separator"></div><div class="sidebar-section-title">RÉALISATIONS</div>'+
+      projects.map(button).join(""):"");
   document.querySelectorAll("[data-select]").forEach(btn=>btn.addEventListener("click",()=>select(btn.dataset.select)));
 }
 function select(id){
@@ -93,25 +94,48 @@ function renderBlock(b,i){
     '<button class="mini" data-down="'+i+'" aria-label="Descendre">↓</button>'+
     '<button class="mini" data-remove="'+i+'">Supprimer</button></div></div>'+inner+'</div>';
 }
+function galleryProjects(){
+  const children=allVisible().filter(x=>x.kind==="detail"&&x.parent_id===selected).sort((a,b)=>a.nav_order-b.nav_order);
+  return '<section class="form-card project-manager"><h3>Réalisations</h3>'+
+    '<p class="field-tip">Chaque photo avec son titre blanc ouvre une page de réalisation. Les changements de titre et de photo sont enregistrés en brouillon ici.</p>'+
+    children.map(p=>'<article class="project-editor-card" id="project-'+esc(p.id)+'">'+
+      '<div class="gallery-card project-card-preview '+(imageOK(p.draft.cover)?"":"no-image")+'">'+
+        (imageOK(p.draft.cover)?'<img src="'+esc(p.draft.cover)+'" alt="">':'<span class="project-photo-placeholder">Photographie à ajouter</span>')+
+        '<span class="gallery-caption" data-project-caption="'+esc(p.id)+'">'+esc(p.draft.title)+'</span></div>'+
+      '<div class="admin-field"><label for="project-name-'+esc(p.id)+'">Nom affiché en blanc sur la photo</label>'+
+        '<input id="project-name-'+esc(p.id)+'" data-project-title="'+esc(p.id)+'" maxlength="180" value="'+esc(p.draft.title)+'"></div>'+
+      '<div class="admin-field"><label for="project-photo-'+esc(p.id)+'">Photographie de cette réalisation</label>'+
+        '<input id="project-photo-'+esc(p.id)+'" type="file" accept="image/jpeg,image/png,image/webp,image/avif" data-project-upload="'+esc(p.id)+'"></div>'+
+      '<div class="project-controls"><button type="button" class="outline-button" data-project-save="'+esc(p.id)+'">Enregistrer la photo et le titre</button>'+
+        '<button type="button" class="black-button" data-project-edit="'+esc(p.id)+'">Modifier la page de cette réalisation →</button></div>'+
+      '<p class="field-tip" data-project-status="'+esc(p.id)+'">'+(p.published?"Visible sur le site après sa dernière publication.":"Brouillon non publié.")+'</p></article>').join("")+
+    '<button type="button" class="outline-button" id="add-project">＋ Ajouter une réalisation</button></section>';
+}
 function showPage(){
   const p=page(selected);if(!p)return;
   $("#editor-title").textContent=draft.title;$("#actions").hidden=false;$("#preview").hidden=false;
   const kind=p.kind;
-  let html='<section class="form-card"><h3>Contenu principal</h3>'+
-    renderField("Grand titre de la page","title",draft.title,{alignKey:"titleAlign",alignValue:draft.titleAlign})+
+  let html='<section class="form-card"><h3>'+(kind==="detail"?"Page de réalisation":"Contenu principal")+'</h3>'+
+    renderField(kind==="detail"?"Nom de la réalisation":"Grand titre de la page","title",draft.title,{alignKey:"titleAlign",alignValue:draft.titleAlign})+
     renderField("Sous-titre (facultatif)","subtitle",draft.subtitle||"",{multiline:true,rows:2,alignKey:"subtitleAlign",alignValue:draft.subtitleAlign})+
-    (kind==="detail"?choosePhoto("cover",draft.cover,"Image de couverture affichée dans la galerie"):"")+
-    '</section><h3>Éléments de la page</h3>';
-  if(kind==="gallery"){
-    html+='<section class="form-card"><h3>Réalisations de cette galerie</h3><p>Chaque réalisation crée une photographie cliquable et sa page dédiée.</p>'+
-      '<button type="button" class="outline-button" id="add-project">＋ Ajouter une réalisation</button>'+
-      '<p class="field-tip">Les pages de réalisations apparaissent également dans la liste de gauche.</p></section>';
+    (kind==="detail"?renderField("Texte sous le titre et le sous-titre","description",draft.description||"",{multiline:true,rows:8,alignKey:"descriptionAlign",alignValue:draft.descriptionAlign,hint:"Utilisez une ligne vide pour séparer les paragraphes."}):"")+
+    '</section>';
+  if(kind==="detail"){
+    const legacy=draft.blocks.map((b,i)=>({b,i})).filter(x=>x.b.type!=="image");
+    if(legacy.length)html+='<h3>Autres textes déjà enregistrés</h3>'+legacy.map(x=>renderBlock(x.b,x.i)).join("");
+    html+='<h3>Photographies de la réalisation</h3>'+
+      '<p class="field-tip">Ces images apparaissent sous le texte. La photo de présentation de la galerie se modifie dans la page de galerie.</p>'+
+      draft.blocks.map((b,i)=>b.type==="image"?renderBlock(b,i):"").join("")+
+      '<div class="block-buttons"><button type="button" data-add="image">＋ Ajouter une photographie</button></div>';
+  }else{
+    html+='<h3>Éléments de la page</h3>'+draft.blocks.map(renderBlock).join("")+
+      '<div class="block-buttons">'+Object.entries(blockNames).filter(([k])=>kind==="press"||k!=="press").map(([k,v])=>'<button type="button" data-add="'+k+'">＋ '+v+'</button>').join("")+'</div>';
+    if(kind==="gallery")html+=galleryProjects();
   }
-  html+=draft.blocks.map(renderBlock).join("")+
-    '<div class="block-buttons">'+Object.entries(blockNames).filter(([k])=>kind==="press"||k!=="press").map(([k,v])=>'<button type="button" data-add="'+k+'">＋ '+v+'</button>').join("")+'</div>';
   if(!p.is_core)html+='<hr class="section-line"><button type="button" id="move-trash" class="danger-button">Déplacer cette page dans la corbeille</button>';
   $("#editing-panel").innerHTML=html;
-  bindContentFields();bindButtons();drawPreview();if(!dirty)notice(p.published?"Page publiée. Les modifications restent privées avant le prochain clic sur PUBLIER.":"Brouillon non publié.");
+  bindContentFields();bindButtons();bindProjectCards();drawPreview();
+  if(!dirty)notice(p.published?"Page publiée. Les modifications restent privées avant le prochain clic sur PUBLIER.":"Brouillon non publié.");
 }
 function markDirty(){dirty=true;notice("Modifications non publiées. Enregistrez votre brouillon ou cliquez sur PUBLIER.");drawPreview();}
 function bindContentFields(){
@@ -134,19 +158,70 @@ function bindContentFields(){
   }));
   $("#editing-panel").querySelectorAll("[data-upload]").forEach(el=>el.addEventListener("change",async()=>{
     const file=el.files?.[0];if(!file)return;
-    if(file.size>8*1024*1024){error("Photographie trop volumineuse (8 Mo maximum)");return;}
-    const fd=new FormData();fd.append("file",file);
     notice("Envoi de la photographie…");
     try{
-      const response=await fetch("/api/admin/upload",{method:"POST",body:fd});
-      const result=await response.json();if(!response.ok)throw Error(result.error||"Erreur d'envoi");
-      setPhoto(el.dataset.upload,result.url);markDirty();showPage();
+      const url=await uploadPhoto(file);
+      setPhoto(el.dataset.upload,url);markDirty();showPage();
     }catch(e){error(e.message);}
   }));
 }
 function setPhoto(path,url){
-  if(path==="cover"){draft.cover=url;return;}
   const i=Number(path.split(":")[1]);draft.blocks[i].src=url;
+}
+async function uploadPhoto(file){
+  if(!file||file.size>8*1024*1024||file.size===0)throw Error("Photographie limitée à 8 Mo");
+  const fd=new FormData();fd.append("file",file);
+  const response=await fetch("/api/admin/upload",{method:"POST",body:fd});
+  const result=await response.json();
+  if(!response.ok)throw Error(result.error||"Impossible d'envoyer la photo");
+  return result.url;
+}
+async function saveProject(id){
+  const p=page(id),field=document.querySelector('[data-project-title="'+id+'"]');
+  if(!p||!field)throw Error("Réalisation introuvable");
+  const title=field.value.trim();
+  if(!title)throw Error("Donnez un nom à cette photographie.");
+  p.draft.title=title;
+  await api("save",{id,content:p.draft});
+  drawSidebar();
+  const status=document.querySelector('[data-project-status="'+id+'"]');
+  if(status)status.textContent="Nom et photographie enregistrés en brouillon. Ouvrez la page pour la publier.";
+  return p;
+}
+function bindProjectCards(){
+  document.querySelectorAll("[data-project-title]").forEach(el=>el.addEventListener("input",()=>{
+    const caption=document.querySelector('[data-project-caption="'+el.dataset.projectTitle+'"]');
+    if(caption)caption.textContent=el.value||"Nouvelle réalisation";
+  }));
+  document.querySelectorAll("[data-project-save]").forEach(btn=>btn.addEventListener("click",async()=>{
+    btn.disabled=true;
+    try{await saveProject(btn.dataset.projectSave);notice("Vignette enregistrée en brouillon.");}
+    catch(e){error(e.message);}
+    finally{btn.disabled=false;}
+  }));
+  document.querySelectorAll("[data-project-edit]").forEach(btn=>btn.addEventListener("click",async()=>{
+    btn.disabled=true;
+    try{
+      const id=btn.dataset.projectEdit;
+      await saveProject(id);
+      select(id);
+    }catch(e){error(e.message);}
+    finally{if(btn.isConnected)btn.disabled=false;}
+  }));
+  document.querySelectorAll("[data-project-upload]").forEach(el=>el.addEventListener("change",async()=>{
+    const id=el.dataset.projectUpload,p=page(id);
+    if(!p||!el.files?.[0])return;
+    el.disabled=true;
+    try{
+      notice("Import de la photographie…");
+      const url=await uploadPhoto(el.files[0]);
+      p.draft.cover=url;
+      await saveProject(id);
+      showPage();
+      notice("Photo de réalisation enregistrée en brouillon. Ouvrez sa page pour la publier.");
+    }catch(e){error(e.message);}
+    finally{if(el.isConnected)el.disabled=false;}
+  }));
 }
 function bindButtons(){
   $("#editing-panel").querySelectorAll("[data-add]").forEach(btn=>btn.addEventListener("click",()=>{
@@ -186,14 +261,18 @@ function drawPreview(){
       '<p>'+esc(draft.copyright)+'</p><h3>MENTIONS LÉGALES</h3><p style="white-space:pre-wrap">'+esc(draft.legal)+'</p></div>';return;}
   if(!draft)return;
   const p=page(selected);
-  let gallery="";
-  if(p?.kind==="gallery")gallery=db.pages.filter(x=>x.parent_id===p.id&&!x.is_trashed).map(x=>
-    '<div style="border:1px solid #ddd;margin:15px 0;padding:12px">'+
-    (imageOK(x.draft.cover)?'<img src="'+esc(x.draft.cover)+'" alt="">':"")+
-    '<p>'+esc(x.draft.title)+'</p></div>').join("");
-  target.innerHTML='<h1 class="page-title '+alignClass(draft.titleAlign)+'">'+esc(draft.title)+'</h1>'+(draft.subtitle?'<p class="page-subtitle '+alignClass(draft.subtitleAlign)+'">'+esc(draft.subtitle)+'</p>':"")+
-    (p?.kind==="detail"&&imageOK(draft.cover)?'<img src="'+esc(draft.cover)+'" alt="">':"")+
-    draft.blocks.map(b=>({b,html:previewBlock(b)})).filter(x=>x.html).map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("")+gallery;
+  const gallery=p?.kind==="gallery"?'<div class="gallery-list">'+
+    allVisible().filter(x=>x.kind==="detail"&&x.parent_id===p.id&&imageOK(x.draft.cover)).map(x=>
+      '<div class="gallery-card"><img src="'+esc(x.draft.cover)+'" alt=""><span class="gallery-caption">'+esc(x.draft.title)+'</span></div>').join("")+'</div>':"";
+  const previewItems=draft.blocks.map(b=>({b,html:previewBlock(b)})).filter(x=>x.html);
+  const detailText=previewItems.filter(x=>x.b.type!=="image").map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
+  const images=previewItems.filter(x=>x.b.type==="image").map(x=>'<section class="content-block block-wrap-image">'+x.html+'</section>').join("");
+  const generic=previewItems.map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
+  const description=p?.kind==="detail"&&draft.description?.trim()?'<div class="project-description '+alignClass(draft.descriptionAlign)+'">'+
+    esc(draft.description).replace(/\*\*(.+?)\*\*/gs,"<strong>$1</strong>").replace(/__(.+?)__/gs,"<u>$1</u>").replace(/\n/g,"<br>")+'</div>':"";
+  target.innerHTML='<div class="'+(p?.kind==="detail"?"page-detail":"")+'"><h1 class="page-title '+alignClass(draft.titleAlign)+'">'+esc(draft.title)+'</h1>'+
+    (draft.subtitle?'<p class="page-subtitle '+alignClass(draft.subtitleAlign)+'">'+esc(draft.subtitle)+'</p>':"")+
+    (p?.kind==="detail"?description+detailText+'<div class="detail-photo-list">'+images+'</div>':generic+gallery)+'</div>';
 }
 function showFooter(){
   $("#editor-title").textContent="Pied de page";$("#actions").hidden=false;$("#preview").hidden=false;
@@ -229,7 +308,9 @@ async function publish(){
 }
 async function createPage(parentId=null){
   const isProject=Boolean(parentId);
-  if(dirty && !confirm("Les modifications en cours ne sont pas enregistrées. Continuer ?"))return;
+  if(dirty && isProject){
+    try{await save();}catch(e){error(e.message);return;}
+  }else if(dirty && !confirm("Les modifications en cours ne sont pas enregistrées. Continuer ?"))return;
   const title=isProject?"Nouvelle réalisation":prompt("Titre de la nouvelle page");
   if(!title||!title.trim())return;
   const trigger=isProject?$("#add-project"):$("#add-page");
@@ -241,10 +322,16 @@ async function createPage(parentId=null){
     db.pages.push({...created,published:null,draft:created.draft,is_trashed:0,is_core:0});
     dirty=false;
     drawSidebar();
-    select(created.id);
-    notice(isProject
-      ?"Réalisation créée. Ajoutez une image de galerie, modifiez le titre puis cliquez sur PUBLIER pour la rendre visible."
-      :"Page créée en brouillon. Ajoutez son contenu, puis publiez-la.");
+    if(isProject){
+      showPage();
+      const card=$("#project-"+created.id);
+      card?.scrollIntoView({behavior:"smooth",block:"center"});
+      card?.querySelector("[data-project-title]")?.focus({preventScroll:true});
+      notice("Réalisation créée ! Ajoutez sa photographie et son nom, puis ouvrez sa page pour la compléter et la publier.");
+    }else{
+      select(created.id);
+      notice("Page créée en brouillon. Ajoutez son contenu, puis publiez-la.");
+    }
   }catch(e){error("Impossible de créer "+(isProject?"la réalisation":"la page")+" : "+e.message);}
   finally{if(trigger?.isConnected)trigger.disabled=false;}
 }

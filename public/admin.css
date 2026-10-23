@@ -45,3 +45,17 @@
 .trash-item{border-bottom:1px solid var(--line);padding:16px 0;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .error{color:#b12b2b;font-size:13px}.empty-state{color:#777;font-size:14px;padding:25px 0}
 @media(max-width:860px){.editor-layout{display:block}.admin-sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:15px}.admin-sidebar h2{margin:8px 0}.admin-page-list{display:flex;flex-direction:row;overflow:auto;gap:6px;padding:7px 0}.admin-page{width:auto;white-space:nowrap;border:1px solid #ddd;font-size:12px}.admin-page.child{padding-left:10px}.side-action{display:inline-block;width:auto;margin:8px 5px 0 0}.admin-sidebar .hint{margin:10px 0}.editor-body{padding:27px 20px}.admin-head{height:75px}.admin-head span{display:none}}
+
+/* Navigation : pages générales au-dessus, toutes les fiches de réalisations au-dessous. */
+.sidebar-divider{border-top:1px solid #bbb;margin:18px 0 13px}
+.sidebar-section-title{font-size:11px;font-weight:700;letter-spacing:.12em;color:#555;margin:0 12px 8px}
+.project-manager{margin-top:28px}
+.project-editor-card{border-top:1px solid var(--line);padding:22px 0 28px;max-width:690px}
+.project-card-preview{min-height:190px;max-width:600px}
+.project-card-preview img{height:clamp(200px,36vw,360px)}
+.project-photo-placeholder{min-height:190px;display:grid;place-items:center;color:#666;font-size:14px}
+.project-controls{display:flex;gap:10px;flex-wrap:wrap}
+.project-controls button{font-size:12px}
+.project-editor-card .gallery-caption{color:#fff;text-shadow:0 1px 4px #000;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+.project-editor-card .gallery-card.no-image .gallery-caption{color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+@media(max-width:600px){.project-controls button{width:100%}.project-card-preview img{height:245px}}

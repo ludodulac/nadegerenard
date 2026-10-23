@@ -58,10 +58,14 @@ function renderPage(p){
   const intro='<h1 class="page-title '+alignClass(d.titleAlign)+'">'+esc(d.title)+'</h1>'+(d.subtitle?'<p class="page-subtitle '+alignClass(d.subtitleAlign)+'">'+esc(d.subtitle)+'</p>':"");
   const back=p.kind==="detail"&&p.parent_id?state.pages.find(x=>x.id===p.parent_id):null;
   const blocks=Array.isArray(d.blocks)?d.blocks:[];
-  const other=blocks.filter(x=>x.type!=="press").map(b=>({b,html:blockHtml(b)})).filter(x=>x.html).map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
+  const sections=blocks.filter(x=>x.type!=="press").map(b=>({b,html:blockHtml(b)})).filter(x=>x.html);
+  const other=sections.map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
+  const detailText=sections.filter(x=>x.b.type!=="image").map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
+  const detailImages=sections.filter(x=>x.b.type==="image").map(x=>'<section class="content-block block-wrap-image">'+x.html+'</section>').join("");
+  const description=p.kind==="detail"&&d.description?.trim()?'<div class="project-description '+alignClass(d.descriptionAlign)+'">'+marked(d.description)+'</div>':"";
+  const body=p.kind==="detail"?description+detailText+'<div class="detail-photo-list">'+detailImages+'</div>':other;
   const press=blocks.filter(x=>x.type==="press").map(blockHtml).join("");
-  const cover=p.kind==="detail"&&safeImage(d.cover)?'<figure class="cover-image">'+picture(d.cover,d.title)+'</figure>':"";
-  root.innerHTML='<article class="page '+(home?"page-home":"")+'">'+(back?'<a class="project-back" data-link href="'+pathFor(back)+'">← '+esc(back.data.title)+'</a>':"")+intro+cover+other+
+  root.innerHTML='<article class="page '+(home?"page-home":"")+(p.kind==="detail"?" page-detail":"")+'">'+(back?'<a class="project-back" data-link href="'+pathFor(back)+'">← '+esc(back.data.title)+'</a>':"")+intro+body+
     (p.kind==="gallery"?listGallery(p):"")+(p.kind==="press"?'<div class="press-list">'+press+'</div>':"")+
     (p.kind==="contact"?contactForm():"")+'</article>';
   document.title=esc(d.title)+" — Nadège Renard";

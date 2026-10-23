@@ -28,6 +28,7 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
 .block-text.line-large{line-height:2.05}.block-text.line-extra{line-height:2.4}
 .block-image img,.cover-image img,.press-image img{display:block;width:100%;height:auto;object-fit:cover}
 .block-image{margin:40px 0 64px}.block-image img{max-height:760px;object-fit:cover}.image-alt{font-size:14px;color:#777;margin-top:8px}
+.image-caption{margin-top:12px;color:var(--sub);font-size:clamp(15px,1.6vw,19px);line-height:1.55;overflow-wrap:anywhere;text-align:left}
 .image-empty{min-height:230px;background:#f5f5f5;border:1px solid #eaeaea;display:grid;place-items:center;color:#999;font-size:15px}
 .page-home .image-empty{min-height:350px}
 .gallery-list{display:grid;grid-template-columns:1fr;gap:32px;margin:36px 0}

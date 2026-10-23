@@ -18,6 +18,7 @@ function normalizePage(value) {
     return {
       type:item.type, align:item.align==="center"?"center":"left", text:cleanText(item.text,15000), title:cleanText(item.title,400),
       src:cleanText(item.src,400), alt:cleanText(item.alt,250),
+      caption:cleanText(item.caption===undefined?item.alt:item.caption,4000),
       url:cleanText(item.url,800), lineHeight:["normal","large","extra"].includes(item.lineHeight)?item.lineHeight:"normal"
     };
   });

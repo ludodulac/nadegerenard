@@ -33,7 +33,12 @@ function blockHtml(b){
     case "subtitle":return b.text?.trim()?'<h2 class="block-subtitle '+alignClass(b.align)+'">'+esc(b.text)+'</h2>':"";
     case "label":return b.text?.trim()?'<h2 class="block-label '+alignClass(b.align)+'">'+esc(b.text)+'</h2>':"";
     case "text":return b.text?.trim()?'<div class="block-text '+alignClass(b.align)+' '+(b.lineHeight==="large"?"line-large":b.lineHeight==="extra"?"line-extra":"")+'">'+marked(b.text)+'</div>':"";
-    case "image":return safeImage(b.src)?'<figure class="block-image">'+picture(b.src,b.alt)+'</figure>':"";
+    case "image":{
+      if(!safeImage(b.src))return "";
+      const caption=b.caption??b.alt??"";
+      return '<figure class="block-image">'+picture(b.src,b.alt||caption)+
+        (caption.trim()?'<figcaption class="image-caption">'+marked(caption)+'</figcaption>':"")+'</figure>';
+    }
     case "press": {
       const link=safeLink(b.url);
       if(!link || (!b.title?.trim() && !safeImage(b.src)))return "";

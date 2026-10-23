@@ -75,7 +75,7 @@ test("l'ancien contenu juridique n'est pas effacé et le modèle ne dépend pas 
   assert.match(legalDocument({legal:"Anciennes informations"}),/Précisions complémentaires\nAnciennes informations/);
   assert.match(legalDocument(normalizeFooter({legal:"Texte existant"})),/Le site\nCe site présente/);
   assert.match(legalDocument({legalDetails:{status:""}}),/\[STATUT PROFESSIONNEL\]/);
-  assert.match(privacyDocument({}),/POLITIQUE DE CONFIDENTIALITÉ/);
+  assert.match(privacyDocument({}),/^Responsable\n\[NOM OU DÉNOMINATION\], joignable à \[E-MAIL\]\./);
   assert.match(html,/id="privacy-button"/);
   assert.match(html,/id="privacy-text"/);
   assert.match(site,/data-open-privacy/);

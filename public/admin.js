@@ -32,8 +32,10 @@ function drawSidebar(){
   document.querySelectorAll("[data-select]").forEach(btn=>btn.addEventListener("click",()=>select(btn.dataset.select)));
 }
 function select(id){
+  if(dirty && selected!==id && !confirm("Des modifications n’ont pas été enregistrées. Voulez-vous vraiment changer de page ?"))return;
   selected=id;dirty=false;
   const p=page(id);
+  if(dirty && selected!==id && !confirm("Un brouillon contient des modifications non enregistrées. Changer de page sans les enregistrer ?")) return;
   if(id==="footer"){draft=structuredClone(db.footer?.draft||{instagram:"",linkedin:"",legal:"",copyright:""});showFooter();}
   else if(id==="trash"){draft=null;showTrash();}
   else if(p){draft=structuredClone(p.draft);showPage();}
@@ -93,7 +95,7 @@ function showPage(){
     '<div class="block-buttons">'+Object.entries(blockNames).filter(([k])=>kind==="press"||k!=="press").map(([k,v])=>'<button type="button" data-add="'+k+'">＋ '+v+'</button>').join("")+'</div>';
   if(!p.is_core)html+='<hr class="section-line"><button type="button" id="move-trash" class="danger-button">Déplacer cette page dans la corbeille</button>';
   $("#editing-panel").innerHTML=html;
-  bindContentFields();bindButtons();drawPreview();notice(p.published?"Page publiée. Les modifications restent privées avant le prochain clic sur PUBLIER.":"Brouillon non publié.");
+  bindContentFields();bindButtons();drawPreview();if(!dirty)notice(p.published?"Page publiée. Les modifications restent privées avant le prochain clic sur PUBLIER.":"Brouillon non publié.");
 }
 function markDirty(){dirty=true;notice("Modifications non publiées. Enregistrez votre brouillon ou cliquez sur PUBLIER.");drawPreview();}
 function bindContentFields(){
@@ -201,6 +203,7 @@ async function publish(){
 async function createPage(parentId=null){
   const title=prompt(parentId?"Nom de la réalisation":"Titre de la nouvelle page");
   if(!title||!title.trim())return;
+  if(dirty && !confirm("Les modifications en cours ne sont pas enregistrées. Continuer ?"))return;
   try{
     const result=await api("create",{title,parentId});
     selected=result.id;await stateLoad();notice("Page créée en brouillon. Ajoutez son contenu, puis publiez-la.");
@@ -213,7 +216,7 @@ async function trashPage(){
 }
 $("#login-form").addEventListener("submit",async e=>{
   e.preventDefault();const f=e.target,button=f.querySelector("button");button.disabled=true;
-  try{await api("login",{password:f.password.value});f.password.value="";await stateLoad();}
+  try{const input=f.elements.namedItem("password");await api("login",{password:input.value});input.value="";await stateLoad();}
   catch(err){$("#login-error").textContent=err.message;}
   finally{button.disabled=false;}
 });

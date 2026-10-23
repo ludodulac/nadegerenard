@@ -155,7 +155,7 @@ function previewBlock(b){
   case "label":return b.text?.trim()?'<h2 class="block-label '+alignClass(b.align)+'">'+esc(b.text)+'</h2>':"";
   case "text":return b.text?.trim()?'<p class="block-text '+alignClass(b.align)+'">'+esc(b.text).replace(/\*\*(.+?)\*\*/gs,"<strong>$1</strong>").replace(/__(.+?)__/gs,"<u>$1</u>").replace(/\n/g,"<br>")+'</p>':"";
   case "image":return imageOK(b.src)?'<img src="'+esc(b.src)+'" alt="'+esc(b.alt)+'">':"";
-  case "press":return '<h3 class="'+alignClass(b.align)+'">'+esc(b.title)+'</h3>'+(imageOK(b.src)?'<img src="'+esc(b.src)+'" alt="">':'<div class="image-empty">Photo article</div>')+'<p>'+esc(b.url)+'</p>';
+  case "press":return (b.title?.trim()?'<h3 class="press-card-title '+alignClass(b.align)+'">'+esc(b.title)+'</h3>':"")+(imageOK(b.src)?'<img src="'+esc(b.src)+'" alt="">':"");
   default:return "";
   }
 }
@@ -170,7 +170,7 @@ function drawPreview(){
   let gallery="";
   if(p?.kind==="gallery")gallery=db.pages.filter(x=>x.parent_id===p.id&&!x.is_trashed).map(x=>
     '<div style="border:1px solid #ddd;margin:15px 0;padding:12px">'+
-    (imageOK(x.draft.cover)?'<img src="'+esc(x.draft.cover)+'" alt="">':'<div class="image-empty">Photographie de la réalisation</div>')+
+    (imageOK(x.draft.cover)?'<img src="'+esc(x.draft.cover)+'" alt="">':"")+
     '<p>'+esc(x.draft.title)+'</p></div>').join("");
   target.innerHTML='<h1 class="page-title '+alignClass(draft.titleAlign)+'">'+esc(draft.title)+'</h1>'+(draft.subtitle?'<p class="page-subtitle '+alignClass(draft.subtitleAlign)+'">'+esc(draft.subtitle)+'</p>':"")+
     (p?.kind==="detail"&&imageOK(draft.cover)?'<img src="'+esc(draft.cover)+'" alt="">':"")+

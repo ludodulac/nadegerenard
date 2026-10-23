@@ -42,8 +42,8 @@ function blockHtml(b){
       if(!safeImage(b.src))return "";
       const caption=b.caption??b.alt??"";
       return '<figure class="block-image">'+picture(b.src,b.alt||caption)+
-        (caption.trim()?'<figcaption class="image-caption">'+marked(caption)+'</figcaption>':"")+
-        photoCreditHtml(b.credit)+'</figure>';
+        photoCreditHtml(b.credit)+
+        (caption.trim()?'<figcaption class="image-caption">'+marked(caption)+'</figcaption>':"")+'</figure>';
     }
     case "press": {
       const link=safeLink(b.url);
@@ -59,10 +59,13 @@ function listGallery(p){
   const children=state.pages.filter(x=>x.kind==="detail"&&x.parent_id===p.id).sort((a,b)=>a.nav_order-b.nav_order);
   if(!children.length)return "";
   return '<div class="gallery-list">'+children.map(x=>{
-    const cover=x.data.cover||x.data.blocks.find(b=>b.type==="image"&&safeImage(b.src))?.src||"";
-    return '<a href="'+pathFor(x)+'" data-link class="gallery-card '+(cover?"":"no-image")+'">'+picture(cover,x.data.title)+
-      '<span class="gallery-caption">'+esc(x.data.title)+'</span>'+
-      (safeImage(x.data.cover)&&copyrightText(x.data.coverCredit)?'<span class="gallery-credit">'+esc(copyrightText(x.data.coverCredit))+'</span>':"")+'</a>';
+    const firstImage=x.data.blocks?.find(b=>b.type==="image"&&safeImage(b.src));
+    const cover=safeImage(x.data.cover)?x.data.cover:firstImage?.src||"";
+    const author=safeImage(x.data.cover)?x.data.coverCredit:firstImage?.credit;
+    return '<a href="'+pathFor(x)+'" data-link class="gallery-card '+(cover?"":"no-image")+'">'+
+      '<span class="gallery-photo">'+picture(cover,x.data.title)+
+      '<span class="gallery-caption">'+esc(x.data.title)+'</span></span>'+
+      (safeImage(cover)&&copyrightText(author)?'<span class="gallery-credit">'+esc(copyrightText(author))+'</span>':"")+'</a>';
   }).join("")+'</div>';
 }
 function renderPage(p){
@@ -127,7 +130,7 @@ function updateMenu(){
   document.querySelector("#menu-links").innerHTML=entries.map(p=>'<a href="'+pathFor(p)+'" data-link>'+esc(p.kind==="home"?"ACCUEIL":p.data.title)+'</a>').join("");
 }
 function legalMarkup(text){
-  const headings=new Set(["Le site","Éditrice et directrice de la publication","Hébergeur","Propriété intellectuelle","Données personnelles","Précisions complémentaires"]);
+  const headings=new Set(["Le site","Éditrice et directrice de la publication","Hébergeur","Propriété intellectuelle","Données personnelles","Précisions complémentaires","Responsable","Données collectées","Base légale","Destinataires","Durée de conservation","Vos droits"]);
   return String(text||"").split("\n\n").map(section=>{
     const [first,...rest]=section.split("\n");
     if(!headings.has(first))return '<p>'+esc(section).replace(/\n/g,"<br>")+'</p>';
@@ -146,7 +149,7 @@ function updateFooter(){
   document.querySelector("#social-links").innerHTML=social.join("");
   document.querySelector("#copyright").textContent=f.copyright||"© Nadège Renard";
   document.querySelector("#legal-text").innerHTML=legalMarkup(legalDocument(f));
-  document.querySelector("#privacy-text").textContent=privacyDocument(f);
+  document.querySelector("#privacy-text").innerHTML=legalMarkup(privacyDocument(f));
 }
 const dialog=document.querySelector("#legal-dialog");
 document.querySelector("#legal-button").addEventListener("click",()=>dialog.showModal());

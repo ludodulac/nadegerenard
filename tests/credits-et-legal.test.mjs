@@ -26,7 +26,7 @@ test("le symbole copyright ne s'affiche que si un nom est renseigné",()=>{
   assert.equal(copyrightText("Sébastien Durand"),"© Sébastien Durand");
   assert.equal(copyrightText("© Sébastien Durand"),"© Sébastien Durand");
   assert.equal(copyrightText("<script>"),"© <script>");
-  assert.match(site,/esc\(copyrightText\(x\.data\.coverCredit\)\)/);
+  assert.match(site,/esc\(copyrightText\(author\)\)/);
   assert.match(site,/photoCreditHtml\(b\.credit\)/);
   assert.match(admin,/data-bkey="credit"/);
   assert.match(admin,/data-project-credit/);
@@ -75,7 +75,7 @@ test("l'ancien contenu juridique n'est pas effacé et le modèle ne dépend pas 
   assert.match(legalDocument({legal:"Anciennes informations"}),/Précisions complémentaires\nAnciennes informations/);
   assert.match(legalDocument(normalizeFooter({legal:"Texte existant"})),/Le site\nCe site présente/);
   assert.match(legalDocument({legalDetails:{status:""}}),/\[STATUT PROFESSIONNEL\]/);
-  assert.match(privacyDocument({}),/POLITIQUE DE CONFIDENTIALITÉ/);
+  assert.match(privacyDocument({}),/^Responsable\n\[NOM OU DÉNOMINATION\], joignable à \[E-MAIL\]\./);
   assert.match(html,/id="privacy-button"/);
   assert.match(html,/id="privacy-text"/);
   assert.match(site,/data-open-privacy/);

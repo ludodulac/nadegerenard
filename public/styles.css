@@ -32,7 +32,9 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
 .image-empty{min-height:230px;background:#f5f5f5;border:1px solid #eaeaea;display:grid;place-items:center;color:#999;font-size:15px}
 .page-home .image-empty{min-height:350px}
 .gallery-list{display:grid;grid-template-columns:1fr;gap:32px;margin:36px 0}
-.gallery-card{position:relative;display:block;text-decoration:none;background:#eee;min-height:310px;overflow:hidden}
+.gallery-card{display:block;text-decoration:none;background:transparent;min-height:0}
+.gallery-photo{position:relative;display:block;background:#eee;overflow:hidden}
+.gallery-card.no-image .gallery-photo{min-height:310px}
 .gallery-card img{width:100%;height:clamp(330px,54vw,590px);object-fit:cover;display:block;transition:transform .35s ease}
 .gallery-card:hover img{transform:scale(1.015)}
 .gallery-caption{position:absolute;bottom:0;left:0;right:0;padding:55px 25px 20px;color:white;background:linear-gradient(transparent,rgba(0,0,0,.48));text-align:center;font-size:clamp(18px,2.8vw,30px);font-weight:400;letter-spacing:.01em;text-transform:uppercase}
@@ -74,17 +76,33 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
 .project-back{display:inline-flex;align-items:center;gap:5px}
 @media(max-width:600px){.page-detail .page-title{font-size:clamp(34px,8vw,60px);margin-bottom:35px}.page-detail .page-subtitle{margin-bottom:42px}.detail-photo-list{gap:20px}}
 
-/* Crédits photographiques facultatifs : sous les photos, sur la vignette pour les galeries. */
-.photo-credit{font-size:12px;line-height:1.5;color:#777;margin:7px 0 0;text-align:right;letter-spacing:.01em}
-.press-image .photo-credit{margin:8px 0 0}
-.gallery-credit{position:absolute;top:12px;right:12px;max-width:calc(100% - 24px);padding:5px 9px;background:rgba(0,0,0,.54);color:#fff;font-size:11px;line-height:1.4;text-align:right;overflow-wrap:anywhere}
-.gallery-credit[hidden]{display:none}
+/* Règle unique pour tout crédit : hors de la photo, juste en dessous et aligné à gauche. */
+.photo-credit,.gallery-credit{
+  display:block;
+  position:static;
+  float:none;
+  left:auto;right:auto;top:auto;bottom:auto;
+  color:#777;
+  background:none;
+  font-size:12px;
+  line-height:1.4;
+  letter-spacing:.01em;
+  text-align:left;
+  margin:2px 0 0;
+  padding:0;
+  max-width:none;
+  overflow-wrap:anywhere;
+}
+.photo-credit[hidden],.gallery-credit[hidden]{display:none}
+.press-image .photo-credit{margin-top:2px}
+.block-image>.photo-credit{margin-top:2px}
+.gallery-card .gallery-credit{margin-top:2px}
 .legal-text{white-space:pre-wrap;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
 .inline-privacy{background:none;border:0;padding:0;color:inherit;text-decoration:underline;text-underline-offset:2px;font-size:inherit;cursor:pointer}
 .inline-privacy:hover{color:#111}
 
 /* Mise en page des mentions légales courtes : titres nets, trous lisibles. */
-#legal-text.legal-text{white-space:normal}
-#legal-text .legal-section{margin:24px 0}
-#legal-text .legal-section h3{font-size:16px;font-weight:650;line-height:1.4;color:#242424;margin:0 0 8px}
-#legal-text .legal-section p{font-size:14px;line-height:1.7;margin:0;overflow-wrap:anywhere}
+.legal-text.legal-text{white-space:normal}
+.legal-text .legal-section{margin:24px 0}
+.legal-text .legal-section h3{font-size:16px;font-weight:650;line-height:1.4;color:#242424;margin:0 0 8px}
+.legal-text .legal-section p{font-size:14px;line-height:1.7;margin:0;overflow-wrap:anywhere}

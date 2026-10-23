@@ -36,8 +36,10 @@ function blockHtml(b){
     case "image":return safeImage(b.src)?'<figure class="block-image">'+picture(b.src,b.alt)+'</figure>':"";
     case "press": {
       const link=safeLink(b.url);
-      if(!link)return "";
-      return '<a class="press-card" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer"><div class="press-card-title '+alignClass(b.align)+'">'+esc(b.title||"Article")+'</div><div class="press-image">'+picture(b.src,b.title)+'</div></a>';
+      if(!link || (!b.title?.trim() && !safeImage(b.src)))return "";
+      return '<a class="press-card" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">'+
+        (b.title?.trim()?'<div class="press-card-title '+alignClass(b.align)+'">'+esc(b.title)+'</div>':"")+
+        (safeImage(b.src)?'<div class="press-image">'+picture(b.src,b.title)+'</div>':"")+'</a>';
     }
     default:return "";
   }

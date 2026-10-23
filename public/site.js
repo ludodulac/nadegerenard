@@ -68,6 +68,20 @@ function listGallery(p){
       (safeImage(cover)&&copyrightText(author)?'<span class="gallery-credit">'+esc(copyrightText(author))+'</span>':"")+'</a>';
   }).join("")+'</div>';
 }
+// Regrouper uniquement les photographies consécutives : les textes gardent leur ordre.
+function groupedPhotoBlocks(items){
+  let html="",photos=[];
+  const flush=()=>{
+    if(photos.length){html+='<div class="page-photo-list">'+photos.join("")+'</div>';photos=[];}
+  };
+  for(const {b,html:content} of items){
+    const section='<section class="content-block block-wrap-'+b.type+'">'+content+'</section>';
+    if(b.type==="image")photos.push(section);
+    else{flush();html+=section;}
+  }
+  flush();
+  return html;
+}
 function renderPage(p){
   const d=p.data||{},home=p.kind==="home";
   brand.classList.toggle("is-hidden",home);
@@ -75,7 +89,7 @@ function renderPage(p){
   const back=p.kind==="detail"&&p.parent_id?state.pages.find(x=>x.id===p.parent_id):null;
   const blocks=Array.isArray(d.blocks)?d.blocks:[];
   const sections=blocks.filter(x=>x.type!=="press").map(b=>({b,html:blockHtml(b)})).filter(x=>x.html);
-  const other=sections.map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
+  const other=home?sections.map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join(""):groupedPhotoBlocks(sections);
   const detailText=sections.filter(x=>x.b.type!=="image").map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
   const detailImages=sections.filter(x=>x.b.type==="image").map(x=>'<section class="content-block block-wrap-image">'+x.html+'</section>').join("");
   const description=p.kind==="detail"&&d.description?.trim()?'<div class="project-description '+alignClass(d.descriptionAlign)+'">'+marked(d.description)+'</div>':"";

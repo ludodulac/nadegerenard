@@ -295,6 +295,18 @@ function previewBlock(b){
   default:return "";
   }
 }
+// Aperçu fidèle au site : regrouper les images voisines sans déplacer les paragraphes.
+function groupedPreviewPhotos(items){
+  let result="",photos=[];
+  const flush=()=>{if(photos.length){result+='<div class="page-photo-list">'+photos.join("")+'</div>';photos=[];}};
+  for(const {b,html} of items){
+    const section='<section class="content-block block-wrap-'+b.type+'">'+html+'</section>';
+    if(b.type==="image")photos.push(section);
+    else{flush();result+=section;}
+  }
+  flush();
+  return result;
+}
 function drawPreview(){
   if(selected==="trash")return;
   const target=$("#preview-content");if(!target)return;
@@ -315,7 +327,7 @@ function drawPreview(){
   const previewItems=draft.blocks.map(b=>({b,html:previewBlock(b)})).filter(x=>x.html);
   const detailText=previewItems.filter(x=>x.b.type!=="image").map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
   const images=previewItems.filter(x=>x.b.type==="image").map(x=>'<section class="content-block block-wrap-image">'+x.html+'</section>').join("");
-  const generic=previewItems.map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join("");
+  const generic=p?.kind==="home"?previewItems.map(x=>'<section class="content-block block-wrap-'+x.b.type+'">'+x.html+'</section>').join(""):groupedPreviewPhotos(previewItems);
   const description=p?.kind==="detail"&&draft.description?.trim()?'<div class="project-description '+alignClass(draft.descriptionAlign)+'">'+
     esc(draft.description).replace(/\*\*(.+?)\*\*/gs,"<strong>$1</strong>").replace(/__(.+?)__/gs,"<u>$1</u>").replace(/\n/g,"<br>")+'</div>':"";
   target.innerHTML='<div class="'+(p?.kind==="detail"?"page-detail":"")+'"><h1 class="page-title '+alignClass(draft.titleAlign)+'">'+esc(draft.title)+'</h1>'+

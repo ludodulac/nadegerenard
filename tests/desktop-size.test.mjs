@@ -11,7 +11,7 @@ test("le premier écran d'accueil possède une photo contenue dans la hauteur du
   assert.match(css,/@media \(min-width: 861px\) and \(max-height: 710px\)/);
   assert.match(css,/max-height: min\(49svh, calc\(100svh - 195px\)\)/);
   assert.match(site,/root\.innerHTML='<article class="page '\+\(home\?"page-home"/);
-  assert.match(site,/const other=sections\.map\(/);
+  assert.match(site,/const other=home\?sections\.map\([\s\S]*?\):groupedPhotoBlocks\(sections\)/);
 });
 
 test("les grands titres sont dimensionnés pour un bureau et une fiche de réalisation",()=>{

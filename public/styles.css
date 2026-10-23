@@ -360,3 +360,36 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
   .gallery-card .gallery-photo {width:fit-content;max-width:100%}
   .gallery-caption {font-size:clamp(16px,4vw,23px);padding:30px 12px 13px}
 }
+
+/* Accueil : le bloc et sa photographie restent centrés sur tous les écrans.
+   Corrige la règle desktop historique qui annulait la marge automatique. */
+.page-home .content-block.block-wrap-image{
+  display:flex;
+  justify-content:center;
+  width:100%;
+}
+.page-home .content-block.block-wrap-image > .block-image{
+  display:table;
+  width:fit-content;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:auto;
+}
+.page-home .content-block.block-wrap-image > .block-image > img{
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
+  max-width:100%;
+  object-fit:contain;
+}
+
+/* Presse sur ordinateur : titres de photos à 25 % de l'ancienne taille
+   (20–32px -> 5–8px), sans toucher aux titres des autres rubriques. */
+@media (min-width: 861px){
+  .press-card-title,
+  .preview-content .press-card-title {
+    font-size:clamp(5px, .75vw, 8px);
+    margin-bottom:4px;
+    line-height:1.25;
+  }
+}

@@ -241,9 +241,17 @@ async function saveProject(id){
   if(!p||!field)throw Error("Réalisation introuvable");
   const title=field.value.trim();
   if(!title)throw Error("Donnez un nom à cette photographie.");
+  const version=pendingProjects.get(id);
+  const snapshot=structuredClone(p.draft);
+  snapshot.title=title;
+  if(creditField)snapshot.coverCredit=creditField.value;
   p.draft.title=title;
   if(creditField)p.draft.coverCredit=creditField.value;
-  await api("save",{id,content:p.draft});
+  await api("save",{id,content:snapshot});
+  if(pendingProjects.get(id)===version)pendingProjects.delete(id);
+  syncDirty();
+  if(!dirty)saveState="saved";
+  updateFloatingSave();
   drawSidebar();
   const status=document.querySelector('[data-project-status="'+id+'"]');
   if(status)status.textContent="Nom et photographie enregistrés en brouillon. Ouvrez la page pour la publier.";
@@ -255,10 +263,13 @@ function bindProjectCards(){
     p.draft.coverCredit=el.value;
     const preview=document.querySelector('[data-project-credit-preview="'+el.dataset.projectCredit+'"]');
     if(preview){preview.textContent=copyrightText(el.value);preview.hidden=!imageOK(p.draft.cover)||!copyrightText(el.value);}
+    markProjectDirty(el.dataset.projectCredit);
   }));
   document.querySelectorAll("[data-project-title]").forEach(el=>el.addEventListener("input",()=>{
     const caption=document.querySelector('[data-project-caption="'+el.dataset.projectTitle+'"]');
     if(caption)caption.textContent=el.value||"Nouvelle réalisation";
+    const p=page(el.dataset.projectTitle);if(p)p.draft.title=el.value;
+    markProjectDirty(el.dataset.projectTitle);
   }));
   document.querySelectorAll("[data-project-save]").forEach(btn=>btn.addEventListener("click",async()=>{
     btn.disabled=true;

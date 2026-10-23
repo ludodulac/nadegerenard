@@ -50,37 +50,30 @@ export function legalDocument(f={}){
   return lines.join("\n");
 }
 
+// Texte court validé, avec trous visibles tant que les champs d'administration sont vides.
 export function privacyDocument(f={}){
   const d=f.legalDetails||{};
+  const hole=(key,label)=>String(d[key]??"").trim()||"["+label+"]";
   return [
-    "POLITIQUE DE CONFIDENTIALITÉ",
-    "Cette notice explique comment les informations personnelles sont utilisées sur le site de présentation artistique Nadège Renard.",
+    "Responsable",
+    hole("editorName","NOM OU DÉNOMINATION")+", joignable à "+hole("email","E-MAIL")+".",
     "",
-    "1. RESPONSABLE DU TRAITEMENT",
-    "La personne responsable est "+value(d,"editorName","nom ou dénomination de la responsable")+".",
-    "Pour toute question relative à vos données : "+value(d,"email","adresse e-mail de contact")+".",
+    "Données collectées",
+    "Via le formulaire de contact : votre nom, votre adresse e-mail, le sujet et votre message. Ces informations servent uniquement à recevoir votre demande et à vous répondre.",
     "",
-    "2. INFORMATIONS COLLECTÉES",
-    "Lorsque vous utilisez le formulaire de contact, vous pouvez transmettre votre nom, votre adresse e-mail, le sujet de votre demande et votre message. Ces informations sont nécessaires pour pouvoir recevoir votre demande et y répondre.",
-    "Des données techniques peuvent également être utilisées pour protéger le formulaire contre les envois automatisés ou abusifs.",
+    "Pour protéger le formulaire des envois automatisés, le site utilise Cloudflare Turnstile et un système de limitation des envois basé sur une empreinte technique dérivée de votre adresse IP (l'adresse elle-même n'est pas conservée en clair).",
     "",
-    "3. POURQUOI CES DONNÉES SONT UTILISÉES",
-    "Les informations envoyées sont utilisées pour traiter votre message et vous répondre. La base légale de ce traitement est l'intérêt légitime de répondre aux personnes qui contactent l'éditrice du site.",
-    "La protection contre les abus repose également sur l'intérêt légitime de sécuriser le formulaire.",
+    "Base légale",
+    "L'intérêt légitime : répondre aux personnes qui nous écrivent et sécuriser le formulaire.",
     "",
-    "4. DESTINATAIRES ET PRESTATAIRES",
-    "Les messages sont adressés à la personne chargée de répondre aux demandes. Les prestataires techniques nécessaires au fonctionnement du site et à la transmission des messages peuvent traiter les données dans le cadre de leurs prestations.",
-    "Le formulaire utilise le service Cloudflare Turnstile pour limiter les envois automatisés. Le site utilise également un mécanisme de limitation des envois qui repose sur une empreinte technique dérivée de l'adresse IP.",
+    "Destinataires",
+    "Vos messages ne sont lus que par la personne qui répond aux demandes. Les prestataires techniques du site (hébergement, envoi des messages, Cloudflare) peuvent les traiter dans le cadre de leurs services.",
     "",
-    "5. DURÉE DE CONSERVATION",
-    "Les messages reçus via le formulaire sont conservés pendant "+value(d,"retention","durée de conservation réellement appliquée")+". Leur conservation est ensuite limitée à ce qui reste nécessaire ou légalement exigé.",
+    "Durée de conservation",
+    hole("retention","DURÉE")+" à compter de la réception du message, puis suppression, sauf obligation légale de conservation.",
     "",
-    "6. VOS DROITS",
-    "Conformément à la réglementation sur la protection des données, vous pouvez demander l'accès à vos données, leur rectification ou leur effacement, ou vous opposer à leur traitement dans les conditions prévues par la loi.",
-    "Pour exercer ces droits, écrivez à "+value(d,"email","adresse e-mail de contact")+". Vous pouvez également déposer une réclamation auprès de la CNIL (www.cnil.fr).",
-    "",
-    "7. PHOTOGRAPHIES",
-    "Les photographies mises en ligne servent à présenter les réalisations artistiques. Les noms des photographes sont précisés au cas par cas, lorsque les crédits sont renseignés."
+    "Vos droits",
+    "Vous pouvez demander l'accès à vos données, leur rectification ou leur effacement, ou vous opposer à leur traitement, en écrivant à "+hole("email","E-MAIL")+". Vous pouvez aussi saisir la CNIL (www.cnil.fr)."
   ].join("\n");
 }
 

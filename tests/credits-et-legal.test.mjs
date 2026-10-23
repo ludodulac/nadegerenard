@@ -26,7 +26,7 @@ test("le symbole copyright ne s'affiche que si un nom est renseigné",()=>{
   assert.equal(copyrightText("Sébastien Durand"),"© Sébastien Durand");
   assert.equal(copyrightText("© Sébastien Durand"),"© Sébastien Durand");
   assert.equal(copyrightText("<script>"),"© <script>");
-  assert.match(site,/esc\(copyrightText\(x\.data\.coverCredit\)\)/);
+  assert.match(site,/esc\(copyrightText\(author\)\)/);
   assert.match(site,/photoCreditHtml\(b\.credit\)/);
   assert.match(admin,/data-bkey="credit"/);
   assert.match(admin,/data-project-credit/);

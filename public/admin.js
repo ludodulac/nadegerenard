@@ -424,10 +424,36 @@ function showTrash(){
   notice("Les pages supprimées ne sont pas visibles sur le site public.");
 }
 async function save(){
-  if(selected==="footer")await api("footer/save",draft);
-  else if(page(selected))await api("save",{id:selected,content:draft});
-  else return;
-  dirty=false;notice("Brouillon enregistré. Rien n'a changé sur le site public.");
+  if(saveInFlight)return saveInFlight;
+  const target=selected,revision=pageRevision,snapshot=structuredClone(draft);
+  const work=(async()=>{
+    try{
+      if(target==="footer"){
+        await api("footer/save",snapshot);
+        db.footer={...(db.footer||{}),draft:snapshot};
+      }else if(page(target)){
+        await api("save",{id:target,content:snapshot});
+        // Garder en mémoire le brouillon effectivement enregistré, même après navigation.
+        page(target).draft=snapshot;
+      }else return;
+      if(pageRevision===revision)pageDirty=false;
+      syncDirty();
+      // La sauvegarde commune inclut les cartes de réalisations présentes dans la galerie.
+      for(const id of [...pendingProjects.keys()]){
+        if(pendingProjects.has(id))await saveProject(id);
+      }
+      syncDirty();
+      saveState=dirty?"dirty":"saved";
+      notice(dirty?"De nouvelles modifications restent à enregistrer.":"Brouillon enregistré. Rien n'a changé sur le site public.");
+    }catch(e){
+      saveState="error";
+      throw e;
+    }
+  })();
+  saveInFlight=work;
+  updateFloatingSave();
+  try{return await work;}
+  finally{saveInFlight=null;updateFloatingSave();}
 }
 async function publish(){
   await save();
@@ -499,7 +525,11 @@ $("#logout").addEventListener("click",async()=>{
 $("#add-page").addEventListener("click",()=>createPage());
 $("#select-footer").addEventListener("click",()=>select("footer"));
 $("#select-trash").addEventListener("click",()=>select("trash"));
-$("#save").addEventListener("click",async()=>{try{await save();}catch(e){error(e.message);}});
+async function onSaveClick(){
+  try{await save();}catch(e){error(e.message);}
+}
+$("#save").addEventListener("click",onSaveClick);
+$("#floating-save-button").addEventListener("click",onSaveClick);
 $("#publish").addEventListener("click",async()=>{try{await publish();}catch(e){error(e.message);}});
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue="";}});
 (async()=>{

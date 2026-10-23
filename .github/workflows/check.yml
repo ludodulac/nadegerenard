@@ -1,0 +1,20 @@
+name: Vérifications Nadège Renard
+on:
+  push:
+    branches: [main, feat/site-v1-cms]
+  pull_request:
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntaxe du code
+        run: |
+          node --check src/worker.js
+          node --check public/site.js
+          node --check public/admin.js
+      - name: Tests de validation
+        run: node --test tests/*.test.mjs

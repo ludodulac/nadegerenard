@@ -1,0 +1,1 @@
+INSERT OR IGNORE INTO settings (key,draft_json,published_json) VALUES ('footer','{"instagram":"","linkedin":"","legal":"","copyright":"© Nadège Renard"}','{"instagram":"","linkedin":"","legal":"","copyright":"© Nadège Renard"}');

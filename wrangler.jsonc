@@ -1,0 +1,29 @@
+{
+  "name": "nadege-renard",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-23",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*",
+      "/media/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nadege-renard-db-eu",
+      "database_id": "07f99be4-4075-4f14-8ec7-8f9ce39b3e64",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "nadege-renard-media",
+      "jurisdiction": "eu"
+    }
+  ]
+}

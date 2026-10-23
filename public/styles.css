@@ -53,3 +53,8 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
 @media(min-width:950px){.page{padding-left:70px;padding-right:70px}.page-home{padding-top:35px}.gallery-list{gap:44px}}
 @media(max-width:600px){.site-header{height:90px}.page{padding-top:10px;padding-bottom:65px}.page-title{margin:32px 0}.page-subtitle{margin-bottom:42px}.gallery-list{gap:22px}.gallery-card{min-height:200px}.gallery-card img{height:300px}.footer-main{align-items:flex-start;flex-direction:column}.site-footer{padding-top:38px}.block-image{margin:24px 0 44px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
+
+/* Alignement modifiable depuis l’administration : centré par défaut, gauche au choix. */
+.align-center{text-align:center}
+.align-left{text-align:left}
+.block-text.align-center,.page-subtitle.align-center{margin-left:auto;margin-right:auto}

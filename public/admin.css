@@ -97,3 +97,14 @@
   .preview-content .detail-photo-list img,
   .preview-content .page-photo-list img {max-height:none}
 }
+
+/* Corbeille des réalisations : action visible sur chaque vignette et en haut de sa fiche. */
+.project-trash-button{border:1px solid #b75b5b;background:#fff;color:#932e2e;padding:11px 15px;font-size:13px;line-height:1.3;cursor:pointer}
+.project-trash-button:hover,.project-trash-button:focus-visible{background:#fff1f1;border-color:#932e2e}
+.project-trash-button:disabled{opacity:.5;cursor:wait}
+.project-trash-top{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:-6px 0 28px}
+.project-trash-top .field-tip{line-height:1.45}
+.trash-item>span{display:flex;flex-direction:column;gap:4px}
+.trash-item strong{font-size:15px;font-weight:500}
+.trash-kind{font-size:11px;color:#777;letter-spacing:.04em}
+@media(max-width:600px){.project-controls .project-trash-button{width:100%}}

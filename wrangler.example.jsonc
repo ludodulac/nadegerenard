@@ -11,7 +11,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "nadege-renard-db",
+      "database_name": "nadege-renard-db-eu",
       "database_id": "REMPLACER_PAR_ID_D1",
       "migrations_dir": "migrations"
     }

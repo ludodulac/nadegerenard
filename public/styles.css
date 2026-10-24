@@ -448,3 +448,18 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
   }
   .page-contact .form-message{min-height:18px;font-size:13px}
 }
+
+@font-face{
+  font-family:"Oswald Local";
+  src:url("/fonts/oswald-latin-600-normal.woff2") format("woff2");
+  font-style:normal;
+  font-weight:600;
+  font-display:swap;
+}
+/* La petite typographie demandée : Oswald SemiBold, référence « performance ».
+   On ne modifie pas les grands titres fins ni les paragraphes. */
+.page-detail .page-subtitle,
+.block-label{
+  font-family:"Oswald Local","Arial Narrow",Arial,sans-serif;
+  font-weight:600;
+}

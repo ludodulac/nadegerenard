@@ -19,6 +19,8 @@ jobs:
           node-version: '22'
       - name: Installer Wrangler
         run: npm install --no-audit --no-fund
+      - name: Préparer les polices locales
+        run: npm run build:fonts
       - name: Vérifier le code
         run: |
           node --check src/worker.js

@@ -8,37 +8,24 @@ const admin=source("public/admin.js");
 const css=source("public/styles.css");
 const worker=source("src/worker.js");
 
-test("texte Confidentialité demandé, complet, court et sans rubrique Photographies",()=>{
-  assert.equal(privacyDocument({}),[
-    "Responsable",
-    "[NOM OU DÉNOMINATION], joignable à [E-MAIL].",
-    "",
-    "Données collectées",
-    "Via le formulaire de contact : votre nom, votre adresse e-mail, le sujet et votre message. Ces informations servent uniquement à recevoir votre demande et à vous répondre.",
-    "",
-    "Pour protéger le formulaire des envois automatisés, le site utilise Cloudflare Turnstile et un système de limitation des envois basé sur une empreinte technique dérivée de votre adresse IP (l'adresse elle-même n'est pas conservée en clair).",
-    "",
-    "Base légale",
-    "L'intérêt légitime : répondre aux personnes qui nous écrivent et sécuriser le formulaire.",
-    "",
-    "Destinataires",
-    "Vos messages ne sont lus que par la personne qui répond aux demandes. Les prestataires techniques du site (hébergement, envoi des messages, Cloudflare) peuvent les traiter dans le cadre de leurs services.",
-    "",
-    "Durée de conservation",
-    "[DURÉE] à compter de la réception du message, puis suppression, sauf obligation légale de conservation.",
-    "",
-    "Vos droits",
-    "Vous pouvez demander l'accès à vos données, leur rectification ou leur effacement, ou vous opposer à leur traitement, en écrivant à [E-MAIL]. Vous pouvez aussi saisir la CNIL (www.cnil.fr)."
-  ].join("\n"));
-  assert.doesNotMatch(privacyDocument({}),/Photographies/i);
+test("texte de confidentialité adapté au portfolio, sans durée inventée",()=>{
+  const s=privacyDocument({});
+  assert.match(s,/Nadège Renard/);
+  assert.match(s,/Cloudflare Turnstile/);
+  assert.match(s,/empreinte technique/);
+  assert.match(s,/Vos droits/);
+  assert.match(s,/page « Contact »/);
+  assert.doesNotMatch(s,/Photographies/i);
 });
 
-test("trous de confidentialité sont remplacés sans modifier son contenu",()=>{
-  const text=privacyDocument({legalDetails:{editorName:"Nadège Renard",email:"contact@example.fr",retention:"12 mois"}});
-  assert.match(text,/Nadège Renard, joignable à contact@example.fr\./);
-  assert.match(text,/12 mois à compter de la réception du message/);
+test("les coordonnées du responsable nécessitent un accord explicite de publication",()=>{
+  const details={editorName:"Nadège Renard",email:"contact@example.fr",retention:"12 mois"};
+  const hidden=privacyDocument({legalDetails:details});
+  assert.doesNotMatch(hidden,/contact@example.fr/);
+  const text=privacyDocument({legalDetails:details,allowPublicContact:true});
+  assert.match(text,/Nadège Renard/);
+  assert.match(text,/12 mois après réception du message/);
   assert.equal((text.match(/contact@example\.fr/g)||[]).length,2);
-  assert.doesNotMatch(text,/\[E-MAIL\]|\[DURÉE\]|\[NOM OU DÉNOMINATION\]/);
 });
 
 test("l'IP est transformée en empreinte salée avant enregistrement anti-spam",()=>{

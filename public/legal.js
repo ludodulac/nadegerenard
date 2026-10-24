@@ -1,83 +1,83 @@
-// Textes modèles affichés immédiatement, même avant la saisie des informations.
-// Les valeurs inconnues sont signalées explicitement : aucune donnée légale inventée.
-export const LEGAL_FIELDS = [
-  {key:"editorName",label:"Nom de l’éditrice et directrice de la publication",hint:"Nom légal, ex. Nadège Renard"},
-  {key:"status",label:"Statut professionnel",hint:"Ex. artiste-auteure, entrepreneure individuelle, société…"},
-  {key:"address",label:"Adresse professionnelle",hint:"Adresse à publier dans les mentions légales"},
-  {key:"siren",label:"SIREN",hint:"Numéro SIREN à 9 chiffres, si applicable"},
-  {key:"email",label:"E-mail professionnel",type:"email"},
-  {key:"phone",label:"Téléphone professionnel",type:"tel"},
-  {key:"hostName",label:"Nom de l’hébergeur",hint:"Nom juridique de la société qui héberge le site"},
-  {key:"hostAddress",label:"Adresse de l’hébergeur"},
-  {key:"hostPhone",label:"Téléphone de l’hébergeur",type:"tel"},
-  {key:"retention",label:"Durée de conservation des messages",hint:"Utilisée dans le texte « Confidentialité »"}
+// Portfolio artistique Nadège Renard : aucun statut d'entreprise ni SIREN actif
+// n'est présumé. Anciennes valeurs éventuellement conservées dans la base
+// ne sont ni reprises ni publiées par les documents générés.
+// Sources (vérifiées octobre 2026) :
+// LCEN art. 1-1 https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049568614
+// Hébergement Cloudflare Inc. : https://www.cloudflare.com/policies/terms/
+// Coordonnées Cloudflare Inc. : 10-K 2025 https://www.sec.gov/Archives/edgar/data/1477333/000147733326000016/cloud-20251231.htm
+export const LEGAL_FIELDS=[
+  {key:"address",label:"Adresse de l'éditrice — uniquement après validation",hint:"Si ce portfolio relève d'une édition professionnelle, l'adresse peut être légalement requise. Ne pas saisir ou publier un domicile sans accord."},
+  {key:"email",label:"Adresse e-mail de contact à publier",type:"email",hint:"Utilisez de préférence une adresse dédiée au site, distincte de l'adresse privée."},
+  {key:"phone",label:"Téléphone à publier",type:"tel",hint:"Ne saisissez pas de numéro personnel sans accord. Pour un site professionnel, un téléphone est normalement requis."},
+  {key:"retention",label:"Durée de conservation des messages",hint:"À confirmer selon l'organisation réelle de la boîte de réception, par ex. « 12 mois »."}
 ];
-export const LEGAL_KEYS = LEGAL_FIELDS.map(x=>x.key);
-const value=(d,key,label)=>String(d?.[key]??"").trim()||"[À COMPLÉTER : "+label+"]";
-const opt=(d,key,prefix)=>String(d?.[key]??"").trim()?prefix+String(d[key]).trim():null;
-export const hasStructuredLegal=f=>LEGAL_KEYS.some(key=>String(f?.legalDetails?.[key]??"").trim());
+export const LEGAL_KEYS=LEGAL_FIELDS.map(x=>x.key);
+export const CLOUDFARE_HOST={
+  name:"Cloudflare, Inc.",
+  address:"101 Townsend Street, San Francisco, CA 94107, États-Unis",
+  phone:"+1 888 993 5273"
+};
+const raw=(d,key)=>String(d?.[key]??"").trim();
+const hole=(d,key,label)=>raw(d,key)||"["+label+"]";
+const name=()=>"Nadège Renard";
+const contactsAllowed=f=>f?.allowPublicContact===true;
+export const hasStructuredLegal=f=>contactsAllowed(f)||LEGAL_KEYS.some(k=>raw(f?.legalDetails,k));
 
-// Texte validé pour l'affichage public : les trous sont conservés tant qu'ils ne sont pas remplis.
+// Seule l'activation explicite des coordonnées par l'éditrice rend publiques
+// les valeurs contenues dans les champs de contact. Par défaut, anciennes
+// adresses/téléphones/e-mails éventuellement stockés restent masqués.
 export function legalDocument(f={}){
-  const d=f.legalDetails||{};
-  const hole=(key,label)=>String(d[key]??"").trim()||"["+label+"]";
-  const lines=[
+  const d=f.legalDetails||{},show=contactsAllowed(f);
+  const contact=(key,label)=>show?hole(d,key,label):"["+label+" — DIFFUSION NON VALIDÉE]";
+  return [
     "Le site",
-    "Ce site présente les travaux de Nadège Renard : scénographies, décors, patines, ateliers. Aucune vente n'est réalisée directement sur le site.",
+    "Ce portfolio présente les créations et collaborations artistiques de Nadège Renard : scénographies, décors, patines et transmission. Aucune vente ni aucun paiement ne sont proposés directement sur ce site.",
     "",
     "Éditrice et directrice de la publication",
-    hole("editorName","NOM"),
-    hole("status","STATUT PROFESSIONNEL"),
-    hole("address","ADRESSE PROFESSIONNELLE"),
-    "SIREN : "+hole("siren","SIREN"),
-    "E-mail : "+hole("email","E-MAIL"),
-    "Téléphone : "+hole("phone","TÉLÉPHONE"),
+    name(),
+    "Adresse : "+contact("address","ADRESSE À CONFIRMER"),
+    "E-mail : "+contact("email","E-MAIL À CONFIRMER"),
+    "Téléphone : "+contact("phone","TÉLÉPHONE À CONFIRMER"),
     "",
     "Hébergeur",
-    hole("hostName","NOM DE L'HÉBERGEUR"),
-    hole("hostAddress","ADRESSE DE L'HÉBERGEUR"),
-    "Téléphone : "+hole("hostPhone","TÉLÉPHONE DE L'HÉBERGEUR"),
+    CLOUDFARE_HOST.name,
+    CLOUDFARE_HOST.address,
+    "Téléphone : "+CLOUDFARE_HOST.phone,
     "",
     "Propriété intellectuelle",
-    "Les textes, images, photographies, décors et scénographies présentés sur ce site sont protégés par le droit d'auteur. Toute reproduction ou réutilisation nécessite l'accord préalable de leurs titulaires. Les crédits photographiques identifient l'auteur de l'image et ne valent pas autorisation de réutilisation.",
+    "Les textes, créations et photographies de ce portfolio sont protégés par le droit d'auteur, sous réserve des droits des auteurs, artistes, compagnies et photographes concernés. Toute reproduction ou réutilisation nécessite l'autorisation des titulaires des droits. Un crédit photo n'est pas une autorisation de reproduction.",
     "",
     "Données personnelles",
-    "Les informations envoyées par le formulaire de contact sont traitées conformément à la rubrique « Confidentialité », accessible en pied de page."
-  ];
-  // Conserver d'éventuelles précisions antérieures sans les effacer silencieusement.
-  const extra=String(f.legal||"").trim();
-  if(extra)lines.push("","Précisions complémentaires",extra);
-  return lines.join("\n");
-}
-
-// Texte court validé, avec trous visibles tant que les champs d'administration sont vides.
-export function privacyDocument(f={}){
-  const d=f.legalDetails||{};
-  const hole=(key,label)=>String(d[key]??"").trim()||"["+label+"]";
-  return [
-    "Responsable",
-    hole("editorName","NOM OU DÉNOMINATION")+", joignable à "+hole("email","E-MAIL")+".",
-    "",
-    "Données collectées",
-    "Via le formulaire de contact : votre nom, votre adresse e-mail, le sujet et votre message. Ces informations servent uniquement à recevoir votre demande et à vous répondre.",
-    "",
-    "Pour protéger le formulaire des envois automatisés, le site utilise Cloudflare Turnstile et un système de limitation des envois basé sur une empreinte technique dérivée de votre adresse IP (l'adresse elle-même n'est pas conservée en clair).",
-    "",
-    "Base légale",
-    "L'intérêt légitime : répondre aux personnes qui nous écrivent et sécuriser le formulaire.",
-    "",
-    "Destinataires",
-    "Vos messages ne sont lus que par la personne qui répond aux demandes. Les prestataires techniques du site (hébergement, envoi des messages, Cloudflare) peuvent les traiter dans le cadre de leurs services.",
-    "",
-    "Durée de conservation",
-    hole("retention","DURÉE")+" à compter de la réception du message, puis suppression, sauf obligation légale de conservation.",
-    "",
-    "Vos droits",
-    "Vous pouvez demander l'accès à vos données, leur rectification ou leur effacement, ou vous opposer à leur traitement, en écrivant à "+hole("email","E-MAIL")+". Vous pouvez aussi saisir la CNIL (www.cnil.fr)."
+    "Les informations transmises via le formulaire de contact sont utilisées pour traiter les demandes et y répondre. Consultez la rubrique « Confidentialité » accessible en pied de page."
   ].join("\n");
 }
-
-export function copyrightText(name){
-  const n=String(name??"").trim().replace(/^©\s*/u,"").trim();
+export function privacyDocument(f={}){
+  const d=f.legalDetails||{},show=contactsAllowed(f),email=show?raw(d,"email"):"";
+  const retention=raw(d,"retention");
+  const contact=email?"à l'adresse "+email:"depuis la page « Contact » de ce site";
+  return [
+    "Responsable",
+    "Nadège Renard. Vous pouvez la contacter "+contact+".",
+    "",
+    "Données collectées",
+    "Le formulaire de contact recueille votre nom, votre adresse e-mail, l'objet de votre demande et votre message. Ces données servent à lire votre demande et à y répondre.",
+    "",
+    "La protection contre les envois automatisés repose sur Cloudflare Turnstile et sur une limitation des envois utilisant une empreinte technique dérivée de l'adresse IP. L'adresse IP n'est pas enregistrée en clair dans le dispositif de limitation des envois.",
+    "",
+    "Base légale",
+    "L'intérêt légitime de répondre aux messages reçus et de protéger le formulaire contre les abus.",
+    "",
+    "Destinataires",
+    "Nadège Renard et, dans la mesure nécessaire au fonctionnement du site, ses prestataires techniques d'hébergement, de protection du formulaire et d'envoi des messages.",
+    "",
+    "Durée de conservation",
+    retention?retention+" après réception du message, sauf obligation légale de conservation.":"[DURÉE DE CONSERVATION À DÉFINIR SELON LA PRATIQUE RÉELLE]",
+    "",
+    "Vos droits",
+    "Vous pouvez demander l'accès, la rectification, l'effacement ou la limitation du traitement de vos données et, dans les conditions prévues par la loi, vous opposer à leur utilisation. Pour exercer vos droits, contactez Nadège Renard "+contact+". Vous pouvez également adresser une réclamation à la CNIL (www.cnil.fr)."
+  ].join("\n");
+}
+export function copyrightText(value){
+  const n=String(value??"").trim().replace(/^©\s*/u,"").trim();
   return n?"© "+n:"";
 }

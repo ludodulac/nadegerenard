@@ -53,3 +53,12 @@ test("les anciennes descriptions d'image deviennent des légendes visibles sans 
   const edited=normalizePage({...original,blocks:[{...original.blocks[0],caption:"Nouvelle légende"}]});
   assert.equal(edited.blocks[0].caption,"Nouvelle légende");
 });
+
+test("les coordonnées légales sont protégées par défaut même après sauvegarde",()=>{
+  const first=normalizeFooter({legalDetails:{address:"Rue du domicile",email:"email@prive.fr",phone:"06 06 06 06 06"}});
+  assert.equal(first.allowPublicContact,false);
+  assert.equal(first.legalDetails.address,"Rue du domicile");
+  const second=normalizeFooter({...first,allowPublicContact:true});
+  assert.equal(second.allowPublicContact,true);
+  assert.equal(normalizeFooter({...second,allowPublicContact:"true"}).allowPublicContact,false);
+});

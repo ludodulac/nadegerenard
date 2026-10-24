@@ -391,25 +391,35 @@ function drawPreview(){
 }
 function showFooter(){
   $("#editor-title").textContent="Pied de page";$("#actions").hidden=false;$("#preview").hidden=false;
-  $("#editing-panel").innerHTML='<section class="form-card legal-ready-card"><h3>Les deux textes sont prêts</h3>'+
-    '<p class="field-tip">Cliquez sur un texte pour le lire. Les passages entre crochets [À COMPLÉTER] restent visibles tant que vous n’avez pas rempli les champs ci-dessous. Les champs sont enregistrés comme brouillon puis publiés avec PUBLIER.</p>'+
-    '<details open class="legal-ready"><summary>Voir les mentions légales déjà rédigées</summary><pre id="legal-ready-preview" class="legal-ready-preview"></pre></details>'+
-    '<details class="legal-ready"><summary>Voir la confidentialité déjà rédigée</summary><pre id="privacy-ready-preview" class="legal-ready-preview"></pre></details></section>'+
+  const approved=draft.allowPublicContact===true;
+  $("#editing-panel").innerHTML='<section class="form-card legal-ready-card"><h3>Mentions légales et confidentialité — textes adaptés au portfolio</h3>'+
+    '<p class="field-tip">L’ancienne entreprise de Nadège ayant cessé son activité, son ancien statut et son SIREN n’apparaissent plus dans les textes. Le caractère professionnel ou non du portfolio reste toutefois à valider : cette modification ne dispense pas des mentions légalement requises.</p>'+
+    '<details open class="legal-ready"><summary>Aperçu des mentions légales</summary><pre id="legal-ready-preview" class="legal-ready-preview"></pre></details>'+
+    '<details class="legal-ready"><summary>Aperçu de la confidentialité</summary><pre id="privacy-ready-preview" class="legal-ready-preview"></pre></details></section>'+
     '<section class="form-card"><h3>Réseaux sociaux</h3>'+
     renderField("Lien Instagram (https://…)","instagram",draft.instagram)+
     renderField("Lien LinkedIn (https://…)","linkedin",draft.linkedin)+
     renderField("Texte de copyright","copyright",draft.copyright)+
-    '</section><section class="form-card"><h3>Mentions légales — champs à remplir</h3>'+
-    '<p class="field-tip">Remplissez uniquement les champs que vous connaissez. Les textes complets sont visibles juste au-dessus ; les informations manquantes restent signalées par [À COMPLÉTER].</p>'+
+    '</section><section class="form-card"><h3>Coordonnées et confidentialité</h3>'+
+    '<p class="field-tip">Le nom de Nadège et les coordonnées de Cloudflare sont déjà intégrés. Son ancien SIREN n’est plus demandé. Il reste à définir les coordonnées de l’éditrice adaptées au caractère juridique du site et la durée réelle de conservation des messages.</p>'+
     LEGAL_FIELDS.map(field=>{
       const key=field.key,value=draft.legalDetails?.[key]||"";
       return '<div class="admin-field"><label for="legal-'+key+'">'+esc(field.label)+'</label>'+
         '<input id="legal-'+key+'" data-legal-key="'+key+'" type="'+(field.type||"text")+'" value="'+esc(value)+'" placeholder="'+esc(field.hint||"")+'">'+
         (field.hint?'<span class="field-tip">'+esc(field.hint)+'</span>':"")+'</div>';
     }).join("")+
-    renderField("Précisions complémentaires (facultatif)","legal",draft.legal,{multiline:true,rows:4,hint:"Le texte existant reste conservé et sera ajouté à la fin des mentions générées."})+
-    '<h3>Confidentialité</h3><p class="field-tip">Le texte sur la protection des données du formulaire de contact est également généré automatiquement.</p></section>';
-  bindContentFields();drawPreview();notice("Les mentions légales doivent être vérifiées et complétées avant publication.");
+    '<label class="legal-publication-consent"><input type="checkbox" id="publish-legal-contacts" data-allow-public-contact '+(approved?"checked":"")+'>'+
+      '<span>J’ai vérifié la situation juridique du portfolio avec Nadège et elle autorise la publication des coordonnées renseignées ci-dessus.</span></label>'+
+    '<p class="field-tip legal-warning">Tant que cette case n’est pas cochée, aucune adresse, aucun téléphone et aucun e-mail personnels enregistrés ici ne seront affichés dans les textes publics. Les crochets dans les mentions légales indiquent alors que le document n’est pas finalisé. Pour un site professionnel, ces coordonnées peuvent être obligatoires.</p>'+
+    (String(draft.legal||"").trim()?'<details class="legal-archive"><summary>Ancien texte conservé dans le brouillon (non publié)</summary><pre class="legal-ready-preview">'+esc(draft.legal)+'</pre></details>':"")+
+    '</section>';
+  bindContentFields();
+  $("#publish-legal-contacts")?.addEventListener("change",e=>{
+    draft.allowPublicContact=e.target.checked;
+    markDirty();
+  });
+  drawPreview();
+  notice("Textes actualisés. Vérifiez les coordonnées et la durée de conservation avant validation et publication.");
 }
 function showTrash(){
   $("#editor-title").textContent="Corbeille";$("#actions").hidden=true;$("#preview").hidden=true;

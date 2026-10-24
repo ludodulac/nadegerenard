@@ -2,10 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 
-test("Oswald SemiBold n'affecte que les petits titres",()=>{
+test("Oswald SemiBold s'applique aux grands titres et aux petits titres, pas aux paragraphes",()=>{
   const css=readFileSync(new URL("../public/styles.css",import.meta.url),"utf8");
   assert.match(css,/@font-face\s*\{[\s\S]*?font-family:"Oswald Local"/);
-  assert.match(css,/\.page-detail \.page-subtitle,\s*\.block-label\s*\{[\s\S]*?font-weight:600/);
+  assert.match(css,/\.page-title,\s*\.block-heading,\s*\.page-detail \.page-subtitle,\s*\.block-label\s*\{[\s\S]*?font-weight:600/);
+  assert.match(css,/\.page-title,\s*\.block-heading\s*\{[\s\S]*?letter-spacing:\.012em/);
+  assert.ok(!/\.block-text\s*\{[^}]*Oswald Local/.test(css));
   assert.ok(!/body\s*\{[^}]*Oswald Local/.test(css));
   assert.ok(css.includes('"/fonts/oswald-latin-600-normal.woff2"'));
 });

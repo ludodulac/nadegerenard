@@ -39,7 +39,7 @@ function normalizeFooter(v){
   const fields=["editorName","status","businessName","director","address","siren","registration","vat","email","phone","hostName","hostAddress","hostPhone","retention"];
   const legalDetails={};
   for(const key of fields) legalDetails[key]=cleanText(v.legalDetails?.[key],key==="address"||key==="hostAddress"?500:250);
-  const x={instagram:cleanText(v.instagram,500),linkedin:cleanText(v.linkedin,500),legal:cleanText(v.legal,12000),copyright:cleanText(v.copyright,150),legalDetails};
+  const x={instagram:cleanText(v.instagram,500),linkedin:cleanText(v.linkedin,500),legal:cleanText(v.legal,12000),copyright:cleanText(v.copyright,150),legalDetails,allowPublicContact:v.allowPublicContact===true};
   if((x.instagram&&!isSafeExternal(x.instagram))||(x.linkedin&&!isSafeExternal(x.linkedin))) throw Error("Lien de réseau social invalide");
   return x;
 }

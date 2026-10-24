@@ -178,3 +178,9 @@
 .login-card .password-eye:focus-visible{outline:2px solid #242424;outline-offset:1px}
 .login-card .password-eye svg{display:block}
 .login-card .password-eye #eye-slash[hidden]{display:none}
+
+/* Validation explicite avant de rendre publiques des coordonnées privées. */
+.legal-publication-consent{display:flex;align-items:flex-start;gap:12px;padding:15px;border:1px solid #c5c5c5;background:#fafafa;line-height:1.5;font-size:14px;cursor:pointer}
+.legal-publication-consent input{width:19px;height:19px;flex-shrink:0;margin:2px 0}
+.legal-warning{display:block;margin-top:14px;line-height:1.6}
+.legal-archive{margin-top:18px}

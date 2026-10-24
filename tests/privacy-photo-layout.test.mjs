@@ -25,7 +25,7 @@ test("les coordonnées du responsable nécessitent un accord explicite de public
   const text=privacyDocument({legalDetails:details,allowPublicContact:true});
   assert.match(text,/Nadège Renard/);
   assert.match(text,/12 mois après réception du message/);
-  assert.equal((text.match(/contact@example\\.fr/g)||[]).length,2);
+  assert.equal((text.match(/contact@example\.fr/g)||[]).length,2);
 });
 
 test("l'IP est transformée en empreinte salée avant enregistrement anti-spam",()=>{

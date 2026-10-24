@@ -456,10 +456,19 @@ button,input,textarea,select{font:inherit}a{color:inherit}button{cursor:pointer}
   font-weight:600;
   font-display:swap;
 }
-/* La petite typographie demandée : Oswald SemiBold, référence « performance ».
-   On ne modifie pas les grands titres fins ni les paragraphes. */
+/* Oswald SemiBold : grands titres et petite typographie.
+   Les paragraphes et la navigation gardent leur police initiale. */
+.page-title,
+.block-heading,
 .page-detail .page-subtitle,
 .block-label{
   font-family:"Oswald Local","Arial Narrow",Arial,sans-serif;
   font-weight:600;
+}
+/* Espacement adapté à cette police condensée, mobile et ordinateur. */
+.page-title,
+.block-heading{
+  letter-spacing:.012em;
+  line-height:1.12;
+  overflow-wrap:anywhere;
 }

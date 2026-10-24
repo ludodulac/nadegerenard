@@ -62,3 +62,15 @@ test("les coordonnées légales sont protégées par défaut même après sauveg
   assert.equal(second.allowPublicContact,true);
   assert.equal(normalizeFooter({...second,allowPublicContact:"true"}).allowPublicContact,false);
 });
+
+// Vérifier la configuration du binding : le déploiement Wrangler est la source
+// de vérité et ne doit pas effacer le binding créé manuellement sur Cloudflare.
+test("le binding Email Service EMAIL survit aux déploiements GitHub",async()=>{
+  const {readFileSync}=await import("node:fs");
+  const config=JSON.parse(readFileSync(new URL("../wrangler.jsonc",import.meta.url),"utf8"));
+  assert.equal(config.name,"nadege-renard");
+  assert.equal(config.send_email.length,1);
+  assert.equal(config.send_email[0].name,"EMAIL");
+  assert.equal(config.d1_databases[0].binding,"DB");
+  assert.equal(config.r2_buckets[0].binding,"MEDIA");
+});

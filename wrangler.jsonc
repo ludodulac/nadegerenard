@@ -25,5 +25,8 @@
       "bucket_name": "nadege-renard-media",
       "jurisdiction": "eu"
     }
+  ],
+  "send_email": [
+    { "name": "EMAIL" }
   ]
 }

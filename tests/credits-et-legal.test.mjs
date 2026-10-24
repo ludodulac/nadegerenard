@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {normalizePage,normalizeFooter} from "../src/worker.js";
-import {copyrightText,legalDocument,privacyDocument,LEGAL_FIELDS,CLOUDFARE_HOST} from "../public/legal.js";
+import {copyrightText,legalDocument,privacyDocument,LEGAL_FIELDS,CLOUDFARE_HOST,EDITOR_ADDRESS} from "../public/legal.js";
 
 const pathMedia="/media/11111111-1111-4111-8111-111111111111.jpg";
 const admin=readFileSync(new URL("../public/admin.js",import.meta.url),"utf8");
@@ -23,12 +23,14 @@ test("mentions légales d'un portfolio sans référence à l'entreprise individu
   const s=legalDocument({});
   assert.match(s,/portfolio présente les créations/);
   assert.match(s,/Nadège Renard/);
+  assert.equal(EDITOR_ADDRESS,"67 rue Henri Barbusse, 44400 Rezé, France");
+  assert.match(s,/Adresse : 67 rue Henri Barbusse, 44400 Rezé, France/);
   assert.match(s,/Cloudflare, Inc\./);
   assert.match(s,/101 Townsend Street/);
   assert.match(s,/Téléphone : \+1 888 993 5273/);
   assert.doesNotMatch(s,/SIREN|STATUT PROFESSIONNEL|487606584|entrepreneure individuelle/i);
   assert.doesNotMatch(s,/Précisions complémentaires|Anciennes informations/);
-  assert.ok(LEGAL_FIELDS.every(f=>!["siren","status"].includes(f.key)));
+  assert.ok(LEGAL_FIELDS.every(f=>!["siren","status","address"].includes(f.key)));
   assert.equal(CLOUDFARE_HOST.name,"Cloudflare, Inc.");
   assert.match(site,/legalMarkup\(legalDocument\(f\)\)/);
 });
@@ -41,7 +43,8 @@ test("aucune ancienne coordonnée privée ni texte libre n'est publié implicite
   assert.match(publicLegal,/DIFFUSION NON VALIDÉE/);
   const accepted=normalizeFooter({...old,allowPublicContact:true});
   assert.equal(accepted.allowPublicContact,true);
-  assert.match(legalDocument(accepted),/12 rue privée/);
+  assert.doesNotMatch(legalDocument(accepted),/12 rue privée/);
+  assert.match(legalDocument(accepted),/Adresse : 67 rue Henri Barbusse, 44400 Rezé, France/);
   assert.match(privacyDocument(accepted),/nad@exemple\.com/);
 });
 test("l'ancien contenu est conservé en stockage mais plus affiché dans les modèles",()=>{

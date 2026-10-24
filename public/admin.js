@@ -401,7 +401,7 @@ function showFooter(){
     renderField("Lien LinkedIn (https://…)","linkedin",draft.linkedin)+
     renderField("Texte de copyright","copyright",draft.copyright)+
     '</section><section class="form-card"><h3>Coordonnées et confidentialité</h3>'+
-    '<p class="field-tip">Le nom de Nadège et les coordonnées de Cloudflare sont déjà intégrés. Son ancien SIREN n’est plus demandé. Il reste à définir les coordonnées de l’éditrice adaptées au caractère juridique du site et la durée réelle de conservation des messages.</p>'+
+    '<p class="field-tip">Le nom et l’adresse de Nadège à Rezé sont maintenant intégrés aux mentions légales, tout comme les coordonnées de l’hébergeur Cloudflare. L’adresse, déclarée lors de l’enregistrement du domaine, n’est pas transmise automatiquement au site : nous l’avons ajoutée au modèle à votre demande. Il reste à vérifier les moyens de contact et la durée réelle de conservation des messages.</p>'+
     LEGAL_FIELDS.map(field=>{
       const key=field.key,value=draft.legalDetails?.[key]||"";
       return '<div class="admin-field"><label for="legal-'+key+'">'+esc(field.label)+'</label>'+
@@ -409,8 +409,8 @@ function showFooter(){
         (field.hint?'<span class="field-tip">'+esc(field.hint)+'</span>':"")+'</div>';
     }).join("")+
     '<label class="legal-publication-consent"><input type="checkbox" id="publish-legal-contacts" data-allow-public-contact '+(approved?"checked":"")+'>'+
-      '<span>J’ai vérifié la situation juridique du portfolio avec Nadège et elle autorise la publication des coordonnées renseignées ci-dessus.</span></label>'+
-    '<p class="field-tip legal-warning">Tant que cette case n’est pas cochée, aucune adresse, aucun téléphone et aucun e-mail personnels enregistrés ici ne seront affichés dans les textes publics. Les crochets dans les mentions légales indiquent alors que le document n’est pas finalisé. Pour un site professionnel, ces coordonnées peuvent être obligatoires.</p>'+
+      '<span>J’ai vérifié avec Nadège qu’elle autorise la publication de l’e-mail et du téléphone éventuellement saisis ci-dessus.</span></label>'+
+    '<p class="field-tip legal-warning">L’adresse postale de Rezé est désormais publique dans les mentions légales, conformément à votre demande. En revanche, tant que cette case n’est pas cochée, aucun e-mail ni téléphone personnels enregistrés ici ne sera affiché. Les crochets restants indiquent que le document n’est pas encore finalisé.</p>'+
     (String(draft.legal||"").trim()?'<details class="legal-archive"><summary>Ancien texte conservé dans le brouillon (non publié)</summary><pre class="legal-ready-preview">'+esc(draft.legal)+'</pre></details>':"")+
     '</section>';
   bindContentFields();
@@ -419,7 +419,7 @@ function showFooter(){
     markDirty();
   });
   drawPreview();
-  notice("Textes actualisés. Vérifiez les coordonnées et la durée de conservation avant validation et publication.");
+  notice("Adresse postale intégrée aux mentions légales. Vérifiez l’e-mail, le téléphone et la durée de conservation avant de finaliser.");
 }
 function showTrash(){
   $("#editor-title").textContent="Corbeille";$("#actions").hidden=true;$("#preview").hidden=true;

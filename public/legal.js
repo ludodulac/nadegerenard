@@ -6,12 +6,15 @@
 // Hébergement Cloudflare Inc. : https://www.cloudflare.com/policies/terms/
 // Coordonnées Cloudflare Inc. : 10-K 2025 https://www.sec.gov/Archives/edgar/data/1477333/000147733326000016/cloud-20251231.htm
 export const LEGAL_FIELDS=[
-  {key:"address",label:"Adresse de l'éditrice — uniquement après validation",hint:"Si ce portfolio relève d'une édition professionnelle, l'adresse peut être légalement requise. Ne pas saisir ou publier un domicile sans accord."},
   {key:"email",label:"Adresse e-mail de contact à publier",type:"email",hint:"Utilisez de préférence une adresse dédiée au site, distincte de l'adresse privée."},
   {key:"phone",label:"Téléphone à publier",type:"tel",hint:"Ne saisissez pas de numéro personnel sans accord. Pour un site professionnel, un téléphone est normalement requis."},
   {key:"retention",label:"Durée de conservation des messages",hint:"À confirmer selon l'organisation réelle de la boîte de réception, par ex. « 12 mois »."}
 ];
 export const LEGAL_KEYS=LEGAL_FIELDS.map(x=>x.key);
+// Adresse de l'ancienne EI confirmée comme correspondant à celle du domaine
+// par le gestionnaire du site, puis publication explicitement demandée.
+// Ne pas récupérer automatiquement les autres données de contact du domaine.
+export const EDITOR_ADDRESS="67 rue Henri Barbusse, 44400 Rezé, France";
 export const CLOUDFARE_HOST={
   name:"Cloudflare, Inc.",
   address:"101 Townsend Street, San Francisco, CA 94107, États-Unis",
@@ -23,9 +26,9 @@ const name=()=>"Nadège Renard";
 const contactsAllowed=f=>f?.allowPublicContact===true;
 export const hasStructuredLegal=f=>contactsAllowed(f)||LEGAL_KEYS.some(k=>raw(f?.legalDetails,k));
 
-// Seule l'activation explicite des coordonnées par l'éditrice rend publiques
-// les valeurs contenues dans les champs de contact. Par défaut, anciennes
-// adresses/téléphones/e-mails éventuellement stockés restent masqués.
+// L'adresse postale confirmée pour le portfolio est désormais publiée à la
+// demande du gestionnaire. Les anciennes valeurs d'adresse de la base restent
+// ignorées. E-mail et téléphone restent protégés par consentement explicite.
 export function legalDocument(f={}){
   const d=f.legalDetails||{},show=contactsAllowed(f);
   const contact=(key,label)=>show?hole(d,key,label):"["+label+" — DIFFUSION NON VALIDÉE]";
@@ -35,7 +38,7 @@ export function legalDocument(f={}){
     "",
     "Éditrice et directrice de la publication",
     name(),
-    "Adresse : "+contact("address","ADRESSE À CONFIRMER"),
+    "Adresse : "+EDITOR_ADDRESS,
     "E-mail : "+contact("email","E-MAIL À CONFIRMER"),
     "Téléphone : "+contact("phone","TÉLÉPHONE À CONFIRMER"),
     "",
